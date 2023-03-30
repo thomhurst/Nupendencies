@@ -10,11 +10,9 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 {
-    private const string LatestNetValue = "net7.0";
-    
     private readonly NuGetClient _nuGetClient;
+    private readonly ITargetFrameworkUpdater _targetFrameworkUpdater;
     private readonly ISolutionBuilder _solutionBuilder;
-    private readonly IRepositoryTreeGenerator _repositoryTreeGenerator;
     private readonly ILogger<CodeRepositoryUpdater> _logger;
     private readonly IPreviousResultsService _previousResultsService;
     private readonly IPackageVersionScanner _packageVersionScanner;
@@ -41,15 +39,15 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
     };
 
     public CodeRepositoryUpdater(NuGetClient nuGetClient,
+        ITargetFrameworkUpdater targetFrameworkUpdater,
         ISolutionBuilder solutionBuilder,
-        IRepositoryTreeGenerator repositoryTreeGenerator,
         ILogger<CodeRepositoryUpdater> logger,
         IPreviousResultsService previousResultsService,
         IPackageVersionScanner packageVersionScanner)
     {
         _nuGetClient = nuGetClient;
+        _targetFrameworkUpdater = targetFrameworkUpdater;
         _solutionBuilder = solutionBuilder;
-        _repositoryTreeGenerator = repositoryTreeGenerator;
         _logger = logger;
         _previousResultsService = previousResultsService;
         _packageVersionScanner = packageVersionScanner;
@@ -57,9 +55,9 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
     public async Task<IReadOnlyList<PackageUpdateResult>> UpdateRepository(CodeRepository repository)
     {
-        await TryUpdateNetVersion(repository);
-        
         _logger.LogInformation("Project Tree: {ProjectTree}", repository);
+
+        await _targetFrameworkUpdater.TryUpdateTargetFramework(repository);
         
         var deletionResults = await TryDeleteUnusedPackages(repository);
         var updateResults = await TryUpdatePackages(repository);
@@ -118,11 +116,11 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
         var nugetDependencyDetails = await _nuGetClient.GetPackages(packagesGrouped.Select(x => x.Key));
 
-        // if (TryUpdateAllPackagesSimultaneously(nugetDependencyDetails, out var updateAllResults))
-        // {
-        //     _logger.LogInformation("Successfully updated all projects simultaneously");
-        //     return updateAllResults;
-        // }
+        if (TryUpdateAllPackagesSimultaneously(nugetDependencyDetails, out var updateAllResults))
+        {
+            _logger.LogInformation("Successfully updated all projects simultaneously");
+            return updateAllResults;
+        }
         
         _logger.LogInformation("Build errors - Falling back to updating packages one by one");
         
@@ -239,44 +237,6 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         _previousResultsService.WriteUnableToRemovePackageEntry(package);
 
         package.UndoRemove();
-    }
-
-    private async Task TryUpdateNetVersion(CodeRepository repository)
-    {
-        var netCoreProjects = repository.AllProjects
-            .Where(x => !x.IsMultiTargeted)
-            .Where(x => x.TargetFramework.HasValue)
-            .Where(x => x.IsNetCore)
-            .ToList();
-
-        if (!netCoreProjects.Any())
-        {
-            return;
-        }
-        
-        foreach (var netCoreProject in netCoreProjects)
-        {
-            netCoreProject.TargetFramework.CurrentValue = LatestNetValue;
-        }
-
-        var projectsToBuild = netCoreProjects
-            .SelectMany(p => p.GetUppermostProjectsReferencingThisProject())
-            .ToImmutableHashSet();
-
-        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
-    
-        var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
-            
-        if (!solutionBuiltSuccessfully)
-        {
-            netCoreProjects.ForEach(x => x.TargetFramework.Rollback());
-
-            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
-        }
-        else
-        {
-            _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
-        }
     }
 
     private async Task<bool> TryUpdatePackages(ImmutableHashSet<Project> projectsToBuild,

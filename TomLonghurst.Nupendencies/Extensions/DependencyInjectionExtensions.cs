@@ -24,11 +24,10 @@ public static class DependencyInjectionExtensions
 
         services.AddInitializers()
             .AddSingleton<AzureDevOpsInitializer>();
-        
-        services.AddSingleton<INetSdkProvider, NetSdkProvider>()
-            .AddSingleton<ISdkFinder, SdkFinder>()
-            .AddSingleton<IRepositoryTreeGenerator, RepositoryTreeGenerator>();
 
+        services.AddSingleton<INetSdkProvider, NetSdkProvider>()
+            .AddSingleton<ISdkFinder, SdkFinder>();
+        
         services.AddSingleton(nupendenciesOptions);
 
         services.AddMemoryCache();
@@ -68,6 +67,7 @@ public static class DependencyInjectionExtensions
             .AddTransient<IRepositoryCloner, RepositoryCloner>()
             .AddTransient<IRepositoryProcessorService, RepositoryProcessorService>()
             .AddTransient<ICodeRepositoryUpdater, CodeRepositoryUpdater>()
+            .AddSingleton<ITargetFrameworkUpdater, TargetFrameworkUpdater>()
             .AddTransient<ISolutionBuilder, SolutionBuilder>()
             .AddTransient<INupendencyUpdater, NupendencyUpdater>()
             .AddTransient<IDirectoryService, DirectoryService>()
