@@ -63,16 +63,4 @@ public record Solution
     {
         return SolutionPath.GetHashCode();
     }
-    
-    protected virtual bool PrintMembers(StringBuilder builder)
-    {
-        builder.AppendLine($"\t Solution: {Name}");
-        foreach (var project in Projects)
-        {
-            builder.Append("\t\t");
-            builder.AppendLine(project.ToString());
-        }
-
-        return true;
-    }
 }

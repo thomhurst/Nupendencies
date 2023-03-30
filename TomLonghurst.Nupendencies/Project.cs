@@ -104,19 +104,17 @@ public record Project
         void DeleteDuplicatePackages()
         {
             foreach (var packageGroup in packages
+                         .Where(p => !p.IsConditional)
                          .GroupBy(x => x.Name)
                          .Where(x => x.Count() > 1))
             {
                 var packagesToRemove = packageGroup.OrderByDescending(x => x.OriginalVersion).Skip(1);
                 foreach (var packageToRemove in packagesToRemove)
                 {
-                    var packageReferenceTag = packageToRemove.PackageReferenceTag;
-                    packageReferenceTag.Parent.RemoveChild(packageReferenceTag);
+                    packageToRemove.Remove();
                     packages.Remove(packageToRemove);
                 }
             }
-
-            Save();
         }
     }
 

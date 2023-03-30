@@ -29,8 +29,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         s => s.Name.Contains("Analyser", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("CodeDom", StringComparison.OrdinalIgnoreCase),
         s => s.PackageReferenceTag.Metadata?.Any(m => m.Name == "OutputItemType") == true,
-        s => !string.IsNullOrEmpty(s.PackageReferenceTag.Condition),
-        s => !string.IsNullOrEmpty(s.PackageReferenceTag.Parent.Condition),
+        s => s.IsConditional,
         s => s.Name.StartsWith("Microsoft.ApplicationInsights.Web", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("AspNet", StringComparison.OrdinalIgnoreCase),
         s => s.Name.StartsWith("Newtonsoft", StringComparison.OrdinalIgnoreCase),
@@ -147,7 +146,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
             await TryUpdatePackages(projectsToBuild, packageReferencesList,
                 nuGetPackageInformation.Version.ToNormalizedString(),
-                results, nuGetPackageInformation.PackageName);
+                results);
         }
 
         // Some packages might not install initially because they depended on a newer version of another package first
@@ -164,8 +163,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
                     .SelectMany(x => x.Project.GetUppermostProjectsReferencingThisProject())
                     .ToImmutableHashSet();
 
-                if (await TryUpdatePackages(projectsToBuild, packages, update.NewPackageVersion, results,
-                        update.PackageName))
+                if (await TryUpdatePackages(projectsToBuild, packages, update.NewPackageVersion, results))
                 {
                     successCount++;
                 }
@@ -196,6 +194,11 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
                 continue;
             }
 
+            if (package.IsConditional)
+            {
+                continue;
+            }
+
             package.Remove();
 
             if (await _packageVersionScanner.DowngradeDetected(package.Project, name, version))
@@ -207,23 +210,22 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
             var projectsToBuild = package.Project.GetUppermostProjectsReferencingThisProject().ToImmutableHashSet();
 
             var build = await _solutionBuilder.BuildProjects(projectsToBuild);
-            
-            if (build.IsSuccessful)
-            {
-                _logger.LogInformation("Package {PackageName} was successfully removed from Project {ProjectPath}",
-                    name, projectPath);
-                
-                results.Add(new PackageUpdateResult
-                {
-                    UpdateBuiltSuccessfully = true,
-                    PackageName = name,
-                    NewPackageVersion = "Removed",
-                });
-            }
-            else
+
+            if (!build.IsSuccessful)
             {
                 UndoPackageRemoval(package);
+                continue;
             }
+
+            _logger.LogInformation("Package {PackageName} was successfully removed from Project {ProjectPath}",
+                name, projectPath);
+
+            results.Add(new PackageUpdateResult
+            {
+                UpdateBuiltSuccessfully = true,
+                PackageName = name,
+                NewPackageVersion = "Removed",
+            });
         }
 
         return results;
@@ -297,23 +299,24 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
     // }
 
     private async Task<bool> TryUpdatePackages(ImmutableHashSet<Project> projectsToBuild,
-        List<ProjectPackage> packageReferences, string latestVersion,
-        List<PackageUpdateResult> packageUpdateResults, string packageName)
+        List<ProjectPackage> packages, string latestVersion,
+        List<PackageUpdateResult> packageUpdateResults)
         {
-            if (!packageReferences.Any())
+            if (!packages.Any())
             {
-                _logger.LogDebug("No PackageReference Tags found for package {Package}", packageName);
+                return false;
             }
+
+            var packageName = packages.First().Name;
             
-            if (packageReferences.Any(x => x.PackageReferenceTag.Parent.Condition.Contains("TargetFramework"))
-                || packageReferences.Any(x => x.PackageReferenceTag.Condition.Contains("TargetFramework")))
+            if (packages.Any(x => x.IsConditional))
             {
                 // Need to think about logic for this.
                 // Different frameworks need different versions.
                 return false;
             }
 
-            var packagesNeedingUpdating = packageReferences
+            var packagesNeedingUpdating = packages
                 .Where(v => VersionsNeedsUpdating(latestVersion, v.OriginalVersion))
                 .ToList();
 

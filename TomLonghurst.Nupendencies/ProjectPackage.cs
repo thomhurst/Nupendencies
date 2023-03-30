@@ -22,11 +22,11 @@ public record ProjectPackage
     public required Project Project { get; init; }
     public required SemVersion OriginalVersion { get; init; }
 
-    private SemVersion _currentVersion = null!;
+    private SemVersion? _currentVersion;
 
-    public required SemVersion CurrentVersion
+    public SemVersion CurrentVersion
     {
-        get => _currentVersion;
+        get => _currentVersion ?? OriginalVersion;
         set
         {
             XmlVersionTag.Value = value.ToString();
@@ -37,6 +37,9 @@ public record ProjectPackage
 
     public ProjectItemElement PackageReferenceTag { get; }
     public ProjectMetadataElement XmlVersionTag { get; }
+
+    public bool IsConditional => !string.IsNullOrWhiteSpace(PackageReferenceTag.Condition)
+                                 || !string.IsNullOrWhiteSpace(PackageReferenceTag.Parent.Condition);
 
     public void RollbackVersion()
     {

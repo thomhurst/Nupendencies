@@ -73,26 +73,23 @@ public record CodeRepository
         builder.AppendLine($"Repository: {Name}");
         foreach (var solution in Solutions)
         {
-            builder.Append('\t');
-            builder.AppendLine(solution.ToString());
+            builder.AppendLine("\t- Solution:" + solution.Name);
             
             foreach (var project in solution.Projects
                          .SelectMany(x => x.GetUppermostProjectsReferencingThisProject())
                          .Distinct())
             {
-                PrintProject(builder, project);
+                PrintProject(2, builder, project);
             }
         }
 
         return true;
     }
 
-    private void PrintProject(StringBuilder builder, Project project)
+    private void PrintProject(int indentLevel, StringBuilder builder, Project project)
     {
-        builder.Append('\t');
-        builder.Append('\t');
-        builder.AppendLine(project.Name);
+        builder.AppendLine($"{new string('\t', indentLevel)}- Project: " + project.Name);
         
-        project.Children.ForEach(child => PrintProject(builder, child));
+        project.Children.ForEach(child => PrintProject(indentLevel+1, builder, child));
     }
 }
