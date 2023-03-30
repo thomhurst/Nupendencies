@@ -13,7 +13,7 @@ public abstract class BaseIssuerRaiserService : IIssuerRaiserService
         _logger = logger;
     }
 
-    public async Task CreateIssues(IEnumerable<PackageUpdateResult> packageUpdateResults, GitRepository gitRepository)
+    public async Task CreateIssues(UpdateReport updateReport, GitRepository gitRepository)
     {
         if (!ShouldProcess(gitRepository))
         {
@@ -25,6 +25,8 @@ public abstract class BaseIssuerRaiserService : IIssuerRaiserService
         var existingNupendencyIssues = gitRepository.Issues
             .Where(i => i.Title.EndsWith(NupendencyIssueTitleSuffix))
             .ToList();
+
+        var packageUpdateResults = updateReport.UpdatedPackagesResults;
         
         foreach (var packageUpdateResultGrouped in packageUpdateResults
                      .Where(u => !u.UpdateBuiltSuccessfully)
@@ -73,8 +75,8 @@ This might need manual intervention.
 
 Details:
 Package Name: {packageUpdateResult.PackageName}
-    Old Version: {packageUpdateResult.OriginalPackageVersion}
-    New Version: {packageUpdateResult.NewPackageVersion}
+    Old Version: {packageUpdateResult.Packages.First().OriginalVersion}
+    New Version: {packageUpdateResult.LatestVersionAttempted}
     Locations: 
 {string.Join(Environment.NewLine, packageUpdateResult.FileLines.Distinct().Select(line => $"\t- {line}"))}
 
@@ -92,7 +94,7 @@ This was an automatic issue by the Nupendencies scanning tool written by Tom Lon
 
     protected string GetTitlePrefixForPackage(PackageUpdateResult packageUpdateResult)
     {
-        return $"'{packageUpdateResult.PackageName}' {packageUpdateResult.OriginalPackageVersion} > {packageUpdateResult.NewPackageVersion} - Dependency Update Failed";
+        return $"'{packageUpdateResult.PackageName}' {packageUpdateResult.Packages.First().OriginalVersion} > {packageUpdateResult.LatestVersionAttempted} - Dependency Update Failed";
     }
 
     protected abstract Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository);

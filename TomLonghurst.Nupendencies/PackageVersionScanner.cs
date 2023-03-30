@@ -5,6 +5,7 @@ using NuGet.ProjectModel;
 using Semver;
 using TomLonghurst.EnumerableAsyncProcessor.Extensions;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies;
@@ -77,7 +78,7 @@ public class PackageVersionScanner : IPackageVersionScanner
     public async Task<bool> DowngradeDetected(Project project,
         string packageName, SemVersion versionRemoved)
     {
-        var upperProjects = project.GetUppermostProjectsReferencingThisProject();
+        var upperProjects = project.GetProjectsToBuild();
 
         var newDependencyGraph = await upperProjects
             .ToAsyncProcessorBuilder()

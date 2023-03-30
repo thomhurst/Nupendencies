@@ -2,5 +2,5 @@
 
 public interface ITargetFrameworkUpdater
 {
-    Task TryUpdateTargetFramework(CodeRepository repository);
+    Task<TargetFrameworkUpdateResult> TryUpdateTargetFramework(CodeRepository repository);
 }

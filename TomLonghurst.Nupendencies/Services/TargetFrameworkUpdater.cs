@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Extensions;
 
 namespace TomLonghurst.Nupendencies.Services;
 
@@ -17,7 +18,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
         _logger = logger;
     }
     
-    public async Task TryUpdateTargetFramework(CodeRepository repository)
+    public async Task<TargetFrameworkUpdateResult> TryUpdateTargetFramework(CodeRepository repository)
     {
         var netCoreProjects = repository.AllProjects
             .Where(x => !x.IsMultiTargeted)
@@ -27,7 +28,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
 
         if (!netCoreProjects.Any())
         {
-            return;
+            return new TargetFrameworkUpdateResult(false, string.Empty, string.Empty);
         }
         
         foreach (var netCoreProject in netCoreProjects)
@@ -35,23 +36,24 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
             netCoreProject.TargetFramework.CurrentValue = LatestNetValue;
         }
 
-        var projectsToBuild = netCoreProjects
-            .SelectMany(p => p.GetUppermostProjectsReferencingThisProject())
-            .ToImmutableHashSet();
+        var projectsToBuild = netCoreProjects.GetProjectsToBuild();
 
         var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
     
         var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
-            
+
+        var targetFrameworkOriginalValue = netCoreProjects.First().TargetFramework.OriginalValue;
+        
         if (!solutionBuiltSuccessfully)
         {
             netCoreProjects.ForEach(x => x.TargetFramework.Rollback());
 
-            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
+            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", targetFrameworkOriginalValue, LatestNetValue);
+
+            return new TargetFrameworkUpdateResult(false, targetFrameworkOriginalValue!, LatestNetValue);
         }
-        else
-        {
-            _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
-        }
+
+        _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", targetFrameworkOriginalValue, LatestNetValue);
+        return new TargetFrameworkUpdateResult(true, targetFrameworkOriginalValue!, LatestNetValue);
     }
 }

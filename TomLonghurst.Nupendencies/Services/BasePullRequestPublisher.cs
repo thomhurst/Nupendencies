@@ -23,14 +23,19 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
         _logger = logger;
     }
     
-    public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository, IReadOnlyList<PackageUpdateResult> packageUpdateResults)
+    public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository,
+        UpdateReport updateReport)
     {
         if (!ShouldProcess(gitRepository))
         {
             return;
         }
+
+        var packageUpdateResults = updateReport.UpdatedPackagesResults;
+        var deletionUpdateResults = updateReport.UnusedRemovedPackagesResults;
         
-        var successfulUpdatesCount = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully);
+        var successfulUpdatesCount = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully)
+            + deletionUpdateResults.Count(d => d.IsSuccessful);
         
         if (successfulUpdatesCount == 0)
         {
@@ -106,7 +111,7 @@ If the build does not succeed, please manually test the pull request and fix any
         
         foreach (var packageUpdateResult in packageUpdateResults.Where(r => r.UpdateBuiltSuccessfully).OrderBy(r => r.PackageName))
         {
-            sb.AppendLine($"{packageUpdateResult.PackageName} - {packageUpdateResult.OriginalPackageVersion} > {packageUpdateResult.NewPackageVersion}");
+            sb.AppendLine($"{packageUpdateResult.PackageName} - {packageUpdateResult.Packages.First().OriginalVersion} > {packageUpdateResult.LatestVersionAttempted}");
         }
 
         return sb.ToString();

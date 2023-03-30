@@ -4,5 +4,5 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public interface IPullRequestPublisher
 {
-    Task PublishPullRequest(string clonedLocation, GitRepository gitRepository, IReadOnlyList<PackageUpdateResult> packageUpdateResults);
+    Task PublishPullRequest(string clonedLocation, GitRepository gitRepository, UpdateReport updateReport);
 }

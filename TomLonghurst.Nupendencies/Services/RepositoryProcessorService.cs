@@ -36,14 +36,11 @@ public class RepositoryProcessorService : IRepositoryProcessorService
 
             var repository = new CodeRepository(clonedLocation);
             
-            var updateResults = await _codeRepositoryUpdater.UpdateRepository(repository);
-            updateResults = EnumerableExtensions.DistinctBy(updateResults, x => x.PackageName)
-                .OrderBy(x => x.PackageName)
-                .ToList();
+            var updateReport = await _codeRepositoryUpdater.UpdateRepository(repository);
+            
+            await Task.WhenAll(_issuerRaiserServices.Select(s => s.CreateIssues(updateReport, gitRepository)));
 
-            await Task.WhenAll(_issuerRaiserServices.Select(s => s.CreateIssues(updateResults, gitRepository)));
-
-            await Task.WhenAll(_pullRequestPublishers.Select(p => p.PublishPullRequest(clonedLocation, gitRepository, updateResults)));
+            await Task.WhenAll(_pullRequestPublishers.Select(p => p.PublishPullRequest(clonedLocation, gitRepository, updateReport)));
 
             _directoryService.TryDeleteDirectory(clonedLocation);
         }

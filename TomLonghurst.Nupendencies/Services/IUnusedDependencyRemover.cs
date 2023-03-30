@@ -4,5 +4,5 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public interface IUnusedDependencyRemover
 {
-    IAsyncEnumerable<PackageUpdateResult> TryDeleteUnusedPackages(CodeRepository repository);
+    IAsyncEnumerable<DependencyRemovalResult> TryDeleteUnusedPackages(CodeRepository repository);
 }

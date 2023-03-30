@@ -2,8 +2,10 @@
 using System.Xml.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Services.Common;
 using Semver;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -20,9 +22,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         ITargetFrameworkUpdater targetFrameworkUpdater,
         IUnusedDependencyRemover unusedDependencyRemover,
         ISolutionBuilder solutionBuilder,
-        ILogger<CodeRepositoryUpdater> logger,
-        IPreviousResultsService previousResultsService,
-        IPackageVersionScanner packageVersionScanner)
+        ILogger<CodeRepositoryUpdater> logger)
     {
         _nuGetClient = nuGetClient;
         _targetFrameworkUpdater = targetFrameworkUpdater;
@@ -31,18 +31,23 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<PackageUpdateResult>> UpdateRepository(CodeRepository repository)
+    public async Task<UpdateReport> UpdateRepository(CodeRepository repository)
     {
         _logger.LogInformation("Project Tree: {ProjectTree}", repository);
 
-        await _targetFrameworkUpdater.TryUpdateTargetFramework(repository);
+        var targetFrameworkUpdateResult = await _targetFrameworkUpdater.TryUpdateTargetFramework(repository);
         
         var deletionResults = await _unusedDependencyRemover.TryDeleteUnusedPackages(repository).ToListAsync();
+        
         var updateResults = await TryUpdatePackages(repository);
 
         await UpdateWebConfigFiles(repository);
-        
-        return deletionResults.Concat(updateResults).ToList();
+
+        return new UpdateReport(
+            targetFrameworkUpdateResult,
+            deletionResults,
+            updateResults
+        );
     }
 
     private async Task UpdateWebConfigFiles(CodeRepository codeRepository)
@@ -55,9 +60,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         }
 
         // One last build in-case we need to generate binding redirects etc
-        var upperMostProjects = codeRepository.AllProjects
-            .SelectMany(project => project.GetUppermostProjectsReferencingThisProject())
-            .ToImmutableHashSet();
+        var upperMostProjects = codeRepository.AllProjects.GetProjectsToBuild();
         
         await _solutionBuilder.BuildProjects(upperMostProjects, "clean");
         await _solutionBuilder.BuildProjects(upperMostProjects);
@@ -116,9 +119,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
             var packageReferencesList = tagsWithThisNugetPackage.ToList();
             
-            var projectsToBuild = packageReferencesList
-                .SelectMany(x => x.Project.GetUppermostProjectsReferencingThisProject())
-                .ToImmutableHashSet();
+            var projectsToBuild = packageReferencesList.GetProjectsToBuild();
 
             await TryUpdatePackages(projectsToBuild, packageReferencesList,
                 nuGetPackageInformation.Version.ToNormalizedString(),
@@ -135,11 +136,9 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
             {
                 var packages = packagesGrouped.First(x => x.Key == update.PackageName).ToList();
 
-                var projectsToBuild = packages
-                    .SelectMany(x => x.Project.GetUppermostProjectsReferencingThisProject())
-                    .ToImmutableHashSet();
+                var projectsToBuild = packages.GetProjectsToBuild();
 
-                if (await TryUpdatePackages(projectsToBuild, packages, update.NewPackageVersion, results))
+                if (await TryUpdatePackages(projectsToBuild, packages, update.LatestVersionAttempted, results))
                 {
                     successCount++;
                 }
@@ -227,37 +226,22 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
             SolutionBuildResult solutionBuildResult)
         {
             var existingElement = packageUpdateResults.FirstOrDefault(x => x.PackageName == packageName);
-
-            var oldVersion = packages.First().OriginalVersion;
             
             if (existingElement != null)
             {
-                existingElement.NewPackageVersion = latestVersion;
-                existingElement.OriginalPackageVersion = oldVersion.ToString();
+                existingElement.Packages.AddRange(packages);
                 existingElement.UpdateBuiltSuccessfully = solutionBuildResult.IsSuccessful;
                 existingElement.PackageDowngradeDetected = solutionBuildResult.DetectedDowngrade;
-                existingElement.FileLines = solutionBuildResult.IsSuccessful
-                    ? new List<string>()
-                    : GetFileLineLocations(packages);
-
                 return;
             }
         
             packageUpdateResults.Add(new PackageUpdateResult
             {
                 PackageName = packageName,
-                NewPackageVersion = latestVersion,
-                OriginalPackageVersion = oldVersion.ToString(),
+                LatestVersionAttempted = latestVersion,
+                Packages = packages.ToHashSet(),
                 UpdateBuiltSuccessfully = solutionBuildResult.IsSuccessful,
-                PackageDowngradeDetected = solutionBuildResult.DetectedDowngrade,
-                FileLines = solutionBuildResult.IsSuccessful ? new List<string>() : GetFileLineLocations(packages)
+                PackageDowngradeDetected = solutionBuildResult.DetectedDowngrade
             });
-        }
-
-        private static List<string> GetFileLineLocations(IEnumerable<ProjectPackage> packageElementXmlWrappers)
-        {
-            return packageElementXmlWrappers
-                .Select(x => Path.GetFileName(x.PackageReferenceTag.ContainingProject.Location.File) + $" | Line: {x.PackageReferenceTag.Location.Line}")
-                .ToList();
         }
 }

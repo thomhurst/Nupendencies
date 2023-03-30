@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.VisualStudio.Services.Common;
+using TomLonghurst.Nupendencies.Extensions;
 
 namespace TomLonghurst.Nupendencies;
 
@@ -75,9 +76,7 @@ public record CodeRepository
         {
             builder.AppendLine("\t- Solution:" + solution.Name);
             
-            foreach (var project in solution.Projects
-                         .SelectMany(x => x.GetUppermostProjectsReferencingThisProject())
-                         .Distinct())
+            foreach (var project in solution.Projects.GetProjectsToBuild())
             {
                 PrintProject(2, builder, project);
             }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -40,7 +41,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
         _solutionBuilder = solutionBuilder;
     }
 
-    public async IAsyncEnumerable<PackageUpdateResult> TryDeleteUnusedPackages(CodeRepository repository)
+    public async IAsyncEnumerable<DependencyRemovalResult> TryDeleteUnusedPackages(CodeRepository repository)
     {
         var allProjects = repository.AllProjects;
 
@@ -72,7 +73,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
                 continue;
             }
 
-            var projectsToBuild = package.Project.GetUppermostProjectsReferencingThisProject().ToImmutableHashSet();
+            var projectsToBuild = package.GetProjectsToBuild();
 
             var build = await _solutionBuilder.BuildProjects(projectsToBuild);
 
@@ -85,12 +86,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
             _logger.LogInformation("Package {PackageName} was successfully removed from Project {ProjectPath}",
                 name, projectPath);
 
-            yield return new PackageUpdateResult
-            {
-                UpdateBuiltSuccessfully = true,
-                PackageName = name,
-                NewPackageVersion = "Removed",
-            };
+            yield return new DependencyRemovalResult(true, name, package);
         }
     }
 

@@ -78,4 +78,39 @@ public record ProjectPackage
             Project.Save();
         }
     }
+
+    public virtual bool Equals(ProjectPackage? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (Name != other.Name) return false;
+        if (Project != other.Project) return false;
+        return PackageReferenceTag.Location.Line.Equals(other.PackageReferenceTag.Location.Line);
+    }
+
+    public override int GetHashCode()
+    {
+        return (PackageReferenceTag.Location.File + PackageReferenceTag.Location.Line).GetHashCode();
+    }
+
+    private sealed class PackageReferenceTagEqualityComparer : IEqualityComparer<ProjectPackage>
+    {
+        public bool Equals(ProjectPackage x, ProjectPackage y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, null)) return false;
+            if (ReferenceEquals(y, null)) return false;
+            if (x.GetType() != y.GetType()) return false;
+            if (x.Name != y.Name) return false;
+            if (x.Project != y.Project) return false;
+            return x.PackageReferenceTag.Location.Line.Equals(y.PackageReferenceTag.Location.Line);
+        }
+
+        public int GetHashCode(ProjectPackage obj)
+        {
+            return obj.PackageReferenceTag.GetHashCode();
+        }
+    }
+
+    public static IEqualityComparer<ProjectPackage> Comparer { get; } = new PackageReferenceTagEqualityComparer();
 }
