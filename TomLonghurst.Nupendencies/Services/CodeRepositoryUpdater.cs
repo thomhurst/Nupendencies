@@ -57,7 +57,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
     public async Task<IReadOnlyList<PackageUpdateResult>> UpdateRepository(CodeRepository repository)
     {
-        //await TryUpdateNetVersion(solutionPaths);
+        await TryUpdateNetVersion(repository);
         
         _logger.LogInformation("Project Tree: {ProjectTree}", repository);
         
@@ -241,62 +241,43 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         package.UndoRemove();
     }
 
-    // private async Task TryUpdateNetVersion(string[] solutionPaths)
-    // {
-    //     var targetFrameworkElements = solutionPaths
-    //         .Select(SolutionFile.Parse)
-    //         .SelectMany(s => s.ProjectsInOrder)
-    //         .Where(p => File.Exists(p.AbsolutePath))
-    //         .Select(p => ProjectRootElement.Open(p.AbsolutePath))
-    //         .SelectMany(x => x.Properties)
-    //         .Where(x => x.Name is "TargetFramework")
-    //         .Where(x => !x.Value.Contains("netstandard"))
-    //         // Net Framework has no dots e.g. net472 vs net6.0
-    //         .Where(x => x.Value.Contains('.'))
-    //         .Where(x => x.Value != LatestNetValue)
-    //         .Select(x => new TargetFrameworkElementXmlWrapper
-    //         {
-    //             OldVersion = x.Value,
-    //             XmlElement = x
-    //         })
-    //         .ToList();
-    //
-    //     foreach (var targetFrameworkElement in targetFrameworkElements)
-    //     {
-    //         targetFrameworkElement.XmlElement.Value = LatestNetValue;
-    //     }
-    //
-    //     var projects = targetFrameworkElements
-    //         .Select(x => x.XmlElement.ContainingProject.Location.File)
-    //         .Distinct()
-    //         .ToList();
-    //     
-    //     var parentProjects = _repositoryTreeGenerator.Generate()
-    //     
-    //     var projectsToBuild 
-    //     
-    //     SaveProjects(projects);
-    //
-    //     var solutionBuildResult = await _solutionBuilder.BuildProjects(solutionPaths, new List<ProjectItemElement>());
-    //
-    //     var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
-    //         
-    //     if (!solutionBuiltSuccessfully)
-    //     {
-    //         foreach (var targetFrameworkElement in targetFrameworkElements)
-    //         {
-    //             targetFrameworkElement.XmlElement.Value = targetFrameworkElement.OldVersion;
-    //         }
-    //
-    //         SaveProjects(projects);
-    //             
-    //         _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", targetFrameworkElements.First().OldVersion, LatestNetValue);
-    //     }
-    //     else
-    //     {
-    //         _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", targetFrameworkElements.First().OldVersion, LatestNetValue);
-    //     }
-    // }
+    private async Task TryUpdateNetVersion(CodeRepository repository)
+    {
+        var netCoreProjects = repository.AllProjects
+            .Where(x => !x.IsMultiTargeted)
+            .Where(x => x.TargetFramework.HasValue)
+            .Where(x => x.IsNetCore)
+            .ToList();
+
+        if (!netCoreProjects.Any())
+        {
+            return;
+        }
+        
+        foreach (var netCoreProject in netCoreProjects)
+        {
+            netCoreProject.TargetFramework.CurrentValue = LatestNetValue;
+        }
+
+        var projectsToBuild = netCoreProjects
+            .SelectMany(p => p.GetUppermostProjectsReferencingThisProject())
+            .ToImmutableHashSet();
+
+        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
+    
+        var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
+            
+        if (!solutionBuiltSuccessfully)
+        {
+            netCoreProjects.ForEach(x => x.TargetFramework.Rollback());
+
+            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
+        }
+        else
+        {
+            _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", netCoreProjects.First().TargetFramework.OriginalValue, LatestNetValue);
+        }
+    }
 
     private async Task<bool> TryUpdatePackages(ImmutableHashSet<Project> projectsToBuild,
         List<ProjectPackage> packages, string latestVersion,
