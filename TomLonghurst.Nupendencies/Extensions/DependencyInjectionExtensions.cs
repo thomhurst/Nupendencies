@@ -68,6 +68,7 @@ public static class DependencyInjectionExtensions
             .AddTransient<IRepositoryProcessorService, RepositoryProcessorService>()
             .AddTransient<ICodeRepositoryUpdater, CodeRepositoryUpdater>()
             .AddSingleton<ITargetFrameworkUpdater, TargetFrameworkUpdater>()
+            .AddSingleton<IUnusedDependencyRemover, UnusedDependencyRemover>()
             .AddTransient<ISolutionBuilder, SolutionBuilder>()
             .AddTransient<INupendencyUpdater, NupendencyUpdater>()
             .AddTransient<IDirectoryService, DirectoryService>()
