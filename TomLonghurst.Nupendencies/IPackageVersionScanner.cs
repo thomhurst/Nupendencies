@@ -6,7 +6,7 @@ namespace TomLonghurst.Nupendencies;
 
 public interface IPackageVersionScanner
 {
-    Task<DependencyGraphSpec> GenerateDependencyGraph(string projectPath);
+    Task<DependencyGraphSpec?> GenerateDependencyGraph(string projectPath);
 
     Task<bool> DowngradeDetected(Project project, string packageName, SemVersion version);
 }

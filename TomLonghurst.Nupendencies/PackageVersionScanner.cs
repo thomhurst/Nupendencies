@@ -27,7 +27,7 @@ public class PackageVersionScanner : IPackageVersionScanner
             .ToList()));
     }
     
-    public async Task<DependencyGraphSpec> GenerateDependencyGraph(string projectPath)
+    public async Task<DependencyGraphSpec?> GenerateDependencyGraph(string projectPath)
     {
         var tempFile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
         
@@ -86,6 +86,7 @@ public class PackageVersionScanner : IPackageVersionScanner
             .ProcessInParallel();
 
         var newDirectDependencies = newDependencyGraph
+            .OfType<DependencyGraphSpec>()
             .SelectMany(x => x.Projects)
             .Where(x => x != null)
             .SelectMany(x => x.TargetFrameworks)
