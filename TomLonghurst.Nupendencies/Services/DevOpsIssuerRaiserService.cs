@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
-using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;

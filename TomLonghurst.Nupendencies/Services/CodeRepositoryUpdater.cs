@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Linq;
-using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.Common;
 using Semver;

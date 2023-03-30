@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies;
 using TomLonghurst.Nupendencies.Extensions;
-using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Services;
 
 public class Program

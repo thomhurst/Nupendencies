@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using CliWrap;
 using CliWrap.Buffered;
-using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies.Models;
 using JsonSerializer = System.Text.Json.JsonSerializer;

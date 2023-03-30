@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using NuGet.ProjectModel;
+﻿using NuGet.ProjectModel;
 using Semver;
 
 namespace TomLonghurst.Nupendencies;

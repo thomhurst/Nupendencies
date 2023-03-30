@@ -1,6 +1,4 @@
-﻿using TomLonghurst.Nupendencies.Models;
-
-namespace TomLonghurst.Nupendencies.Services;
+﻿namespace TomLonghurst.Nupendencies.Services;
 
 public interface IUnusedDependencyRemover
 {

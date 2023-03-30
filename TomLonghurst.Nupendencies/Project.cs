@@ -2,7 +2,6 @@
 using Microsoft.Build.Construction;
 using Microsoft.VisualStudio.Services.Common;
 using Semver;
-using TomLonghurst.Nupendencies.Extensions;
 
 namespace TomLonghurst.Nupendencies;
 

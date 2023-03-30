@@ -1,6 +1,5 @@
 ﻿using Microsoft.Build.Construction;
 using Semver;
-using TomLonghurst.Nupendencies.Services;
 
 namespace TomLonghurst.Nupendencies;
 

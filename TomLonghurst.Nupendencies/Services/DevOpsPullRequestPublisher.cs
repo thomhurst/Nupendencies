@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
-using TomLonghurst.Nupendencies.Clients;
-using TomLonghurst.Nupendencies.Models;
-using TomLonghurst.Nupendencies.Models.DevOps;
 using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;

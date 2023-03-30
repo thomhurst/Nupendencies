@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.Build.Construction;
+﻿using Microsoft.Build.Construction;
 using NuGet.Packaging;
 
 namespace TomLonghurst.Nupendencies;
