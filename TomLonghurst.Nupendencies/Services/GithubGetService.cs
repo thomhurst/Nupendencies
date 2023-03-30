@@ -16,14 +16,14 @@ public class GithubGetService : IGithubGetService
         _nupendenciesOptions = nupendenciesOptions;
     }
 
-    public async Task<IEnumerable<Repo>> GetRepositories()
+    public async Task<IEnumerable<GitRepository>> GetRepositories()
     {
         var query = new Query()
             .Organization(_nupendenciesOptions.GithubOptions.Organization)
             .Team(_nupendenciesOptions.GithubOptions.Team)
             .Repositories()
             .AllPages()
-            .Select(r => new Repo(RepositoryType.Github)
+            .Select(r => new GitRepository(RepositoryType.Github)
             {
                 Owner = r.Owner.Login,
                 Name = r.Name,

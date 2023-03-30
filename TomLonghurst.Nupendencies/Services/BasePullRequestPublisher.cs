@@ -8,7 +8,7 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public abstract class BasePullRequestPublisher : IPullRequestPublisher
 {
-    private readonly NupendenciesOptions _nupendenciesOptions;
+    protected readonly NupendenciesOptions _nupendenciesOptions;
     private readonly IGitCredentialsProvider _gitCredentialsProvider;
     private readonly ILogger _logger;
 
@@ -23,9 +23,9 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
         _logger = logger;
     }
     
-    public async Task PublishPullRequest(string clonedLocation, Repo repo, IReadOnlyList<PackageUpdateResult> packageUpdateResults)
+    public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository, IReadOnlyList<PackageUpdateResult> packageUpdateResults)
     {
-        if (!ShouldProcess(repo))
+        if (!ShouldProcess(gitRepository))
         {
             return;
         }
@@ -37,42 +37,42 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
             return;
         }
 
-        var existingOpenPrs = await GetOpenPullRequests(repo);
+        var existingOpenPrs = await GetOpenPullRequests(gitRepository);
         var prBody = GenerateBody(packageUpdateResults);
 
-        var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(repo, existingOpenPrs, prBody);
+        var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
         if (matchingPrWithSamePackageUpdates is { HasConflicts: false })
         {
             // There is an open PR identical to this one. Do nothing.
-            _logger.LogDebug("PR with the same dependencies already exists on Repo {RepoName}", repo.Name);
+            _logger.LogDebug("PR with the same dependencies already exists on Repo {RepoName}", gitRepository.Name);
             return;
         }
 
         if (matchingPrWithSamePackageUpdates != null)
         {
-            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it has conflicts", matchingPrWithSamePackageUpdates.Number, repo.Name);
-            await ClosePullRequest(repo, matchingPrWithSamePackageUpdates);
+            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it has conflicts", matchingPrWithSamePackageUpdates.Number, gitRepository.Name);
+            await ClosePullRequest(gitRepository, matchingPrWithSamePackageUpdates);
         }
 
         var matchingPrWithOtherStaleUpdates = existingOpenPrs.FirstOrDefault(pr => pr.Body.StartsWith(PrBodyPrefix));
         if (matchingPrWithOtherStaleUpdates != null )
         {
             // There is an open PR that is stale. Close it and open a new one.
-            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it is stale", matchingPrWithOtherStaleUpdates.Number, repo.Name);
-            await ClosePullRequest(repo, matchingPrWithOtherStaleUpdates);
+            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it is stale", matchingPrWithOtherStaleUpdates.Number, gitRepository.Name);
+            await ClosePullRequest(gitRepository, matchingPrWithOtherStaleUpdates);
         }
 
         var branchName = $"feature/nupendencies-{DateTime.UtcNow.Ticks}";
-        await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, repo.Name)), branchName, repo.RepositoryType);
+        await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, gitRepository.Name)), branchName, gitRepository.RepositoryType);
 
-        _logger.LogDebug("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, repo.Name);
+        _logger.LogDebug("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
         
-        await CreatePullRequest(repo, branchName, prBody, successfulUpdatesCount);
+        await CreatePullRequest(gitRepository, branchName, prBody, successfulUpdatesCount);
     }
 
-    private static Pr? MatchingPrWithSamePackageUpdates(Repo repo, IEnumerable<Pr> existingOpenPrs, string prBody)
+    private static Pr? MatchingPrWithSamePackageUpdates(GitRepository gitRepository, IEnumerable<Pr> existingOpenPrs, string prBody)
     {
-        if (repo.RepositoryType == RepositoryType.AzureDevOps)
+        if (gitRepository.RepositoryType == RepositoryType.AzureDevOps)
         {
             // Azure truncates to 400 characters wtf
             return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(400));
@@ -106,13 +106,13 @@ If the build does not succeed, please manually test the pull request and fix any
         
         foreach (var packageUpdateResult in packageUpdateResults.Where(r => r.UpdateBuiltSuccessfully).OrderBy(r => r.PackageName))
         {
-            sb.AppendLine($"{packageUpdateResult.PackageName} - {packageUpdateResult.OldPackageVersion} > {packageUpdateResult.NewPackageVersion}");
+            sb.AppendLine($"{packageUpdateResult.PackageName} - {packageUpdateResult.OriginalPackageVersion} > {packageUpdateResult.NewPackageVersion}");
         }
 
         return sb.ToString();
     }
 
-    private async Task PushChangesToRemoteBranch(Repository repo, string branchName, RepositoryType repoRepositoryType)
+    private async Task PushChangesToRemoteBranch(IRepository repo, string branchName, RepositoryType repoRepositoryType)
     {
         _logger.LogDebug("Starting Push to Branch {BranchName}", branchName);
 
@@ -148,8 +148,8 @@ If the build does not succeed, please manually test the pull request and fix any
         return new Signature(_nupendenciesOptions.CommitterName, _nupendenciesOptions.CommitterEmail, DateTimeOffset.UtcNow);
     }
 
-    protected abstract Task<IEnumerable<Pr>> GetOpenPullRequests(Repo repo);
-    protected abstract Task ClosePullRequest(Repo repo, Pr pr);
-    protected abstract Task CreatePullRequest(Repo repo, string branchName, string body, int updateCount);
-    protected abstract bool ShouldProcess(Repo repo);
+    protected abstract Task<IEnumerable<Pr>> GetOpenPullRequests(GitRepository gitRepository);
+    protected abstract Task ClosePullRequest(GitRepository gitRepository, Pr pr);
+    protected abstract Task CreatePullRequest(GitRepository gitRepository, string branchName, string body, int updateCount);
+    protected abstract bool ShouldProcess(GitRepository gitRepository);
 }

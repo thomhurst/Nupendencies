@@ -8,7 +8,7 @@ public class NupendenciesOptions
     public AzureDevOpsOptions AzureDevOpsOptions { get; set; } = new();
 
     public List<PrivateNugetFeedOptions> PrivateNugetFeedOptions { get; } = new();
-    public List<Func<Repo, bool>> RepositoriesToScan { get; set; } = new();
+    public List<Func<GitRepository, bool>> RepositoriesToScan { get; set; } = new();
     
     public string CommitterName { get; set; }
     public string CommitterEmail { get; set; }

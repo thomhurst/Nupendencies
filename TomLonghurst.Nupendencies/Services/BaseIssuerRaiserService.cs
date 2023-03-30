@@ -13,14 +13,16 @@ public abstract class BaseIssuerRaiserService : IIssuerRaiserService
         _logger = logger;
     }
 
-    public async Task CreateIssues(IEnumerable<PackageUpdateResult> packageUpdateResults, Repo repo)
+    public async Task CreateIssues(IEnumerable<PackageUpdateResult> packageUpdateResults, GitRepository gitRepository)
     {
-        if (!ShouldProcess(repo))
+        if (!ShouldProcess(gitRepository))
         {
             return;
         }
+
+        var currentIssues = await GetCurrentIssues(gitRepository);
         
-        var existingNupendencyIssues = repo.Issues
+        var existingNupendencyIssues = gitRepository.Issues
             .Where(i => i.Title.EndsWith(NupendencyIssueTitleSuffix))
             .ToList();
         
@@ -42,11 +44,24 @@ public abstract class BaseIssuerRaiserService : IIssuerRaiserService
             if (matchingIssueForOtherVersion != null)
             {
                 // Issue already open for this another version. We should close it and raise a new one with the new version.
-                await CloseIssue(repo, matchingIssueForOtherVersion);
+                await CloseIssue(gitRepository, matchingIssueForOtherVersion);
             }
 
-            _logger.LogDebug("Raising Issue for Package {PackageName} on Repo {RepoName}", packageUpdateResult.PackageName, repo.Name);
-            await RaiseIssue(repo, packageUpdateResult);
+            _logger.LogDebug("Raising Issue for Package {PackageName} on Repo {RepoName}", packageUpdateResult.PackageName, gitRepository.Name);
+            await RaiseIssue(gitRepository, packageUpdateResult);
+        }
+        
+        foreach (var packageUpdateResultGrouped in packageUpdateResults
+                     .Where(u => u.UpdateBuiltSuccessfully))
+        {
+            var previousIssueForNowSuccessfulPackageUpdate = currentIssues.FirstOrDefault(x => x.Title.StartsWith($"'{packageUpdateResultGrouped.PackageName}'")
+                                             && x.Title.EndsWith(
+                                                 "Dependency Update Failed ## Nupendencies Automated Issue ##"));
+            
+            if (previousIssueForNowSuccessfulPackageUpdate != null)
+            {
+                await CloseIssue(gitRepository, previousIssueForNowSuccessfulPackageUpdate);
+            }
         }
     }
 
@@ -58,7 +73,7 @@ This might need manual intervention.
 
 Details:
 Package Name: {packageUpdateResult.PackageName}
-    Old Version: {packageUpdateResult.OldPackageVersion}
+    Old Version: {packageUpdateResult.OriginalPackageVersion}
     New Version: {packageUpdateResult.NewPackageVersion}
     Locations: 
 {string.Join(Environment.NewLine, packageUpdateResult.FileLines.Distinct().Select(line => $"\t- {line}"))}
@@ -77,12 +92,14 @@ This was an automatic issue by the Nupendencies scanning tool written by Tom Lon
 
     protected string GetTitlePrefixForPackage(PackageUpdateResult packageUpdateResult)
     {
-        return $"'{packageUpdateResult.PackageName}' {packageUpdateResult.OldPackageVersion} > {packageUpdateResult.NewPackageVersion} - Dependency Update Failed";
+        return $"'{packageUpdateResult.PackageName}' {packageUpdateResult.OriginalPackageVersion} > {packageUpdateResult.NewPackageVersion} - Dependency Update Failed";
     }
 
-    protected abstract Task RaiseIssue(Repo repo, PackageUpdateResult packageUpdateResult);
+    protected abstract Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository);
 
-    protected abstract Task CloseIssue(Repo repo, Iss issue);
+    protected abstract Task RaiseIssue(GitRepository gitRepository, PackageUpdateResult packageUpdateResult);
+
+    protected abstract Task CloseIssue(GitRepository gitRepository, Iss issue);
     
-    protected abstract bool ShouldProcess(Repo repo);
+    protected abstract bool ShouldProcess(GitRepository gitRepository);
 }

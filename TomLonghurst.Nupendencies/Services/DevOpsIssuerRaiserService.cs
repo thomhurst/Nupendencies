@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Models;
 
@@ -6,29 +8,35 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public class DevOpsIssuerRaiserService : BaseIssuerRaiserService
 {
-    private readonly DevOpsHttpClient _devOpsHttpClient;
+    private readonly VssConnection _vssConnection;
+    private readonly AzureDevOpsOptions _azureDevOpsOptions;
 
-    public DevOpsIssuerRaiserService(DevOpsHttpClient devOpsHttpClient, ILogger<DevOpsIssuerRaiserService> logger) : base(logger)
+    public DevOpsIssuerRaiserService(ILogger<DevOpsIssuerRaiserService> logger,
+        VssConnection vssConnection,
+        AzureDevOpsOptions azureDevOpsOptions) : base(logger)
     {
-        _devOpsHttpClient = devOpsHttpClient;
+        _vssConnection = vssConnection;
+        _azureDevOpsOptions = azureDevOpsOptions;
     }
 
-    protected override async Task RaiseIssue(Repo repo, PackageUpdateResult packageUpdateResult)
+    protected override Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository)
     {
-        await _devOpsHttpClient.CreateIssue(repo.Id,
-            GenerateTitle(packageUpdateResult),
-            GenerateBody(packageUpdateResult)
-        );
+        return Task.FromResult(new List<Iss>());
     }
 
-    protected override async Task CloseIssue(Repo repo, Iss issue)
+    protected override async Task RaiseIssue(GitRepository gitRepository, PackageUpdateResult packageUpdateResult)
     {
-        await _devOpsHttpClient.CloseIssue(repo.Id, issue.IssueNumber);
+        // TODO
     }
 
-    protected override bool ShouldProcess(Repo repo)
+    protected override async Task CloseIssue(GitRepository gitRepository, Iss issue)
+    {
+        // TODO
+    }
+
+    protected override bool ShouldProcess(GitRepository gitRepository)
     {
         return false; // TODO: This hasn't been built yet
-        return repo.RepositoryType == RepositoryType.AzureDevOps;
+        return gitRepository.RepositoryType == RepositoryType.AzureDevOps;
     }
 }

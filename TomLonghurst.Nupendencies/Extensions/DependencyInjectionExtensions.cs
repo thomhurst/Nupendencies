@@ -2,8 +2,12 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
+using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Services;
+using Build = Microsoft.Build;
 
 namespace TomLonghurst.Nupendencies.Extensions;
 
@@ -11,10 +15,15 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection AddNupendencies(this IServiceCollection services, NupendenciesOptions nupendenciesOptions)
     {
-        var instance = Microsoft.Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
+        var instance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
             .MaxBy(x => x.Version);
         
-        Microsoft.Build.Locator.MSBuildLocator.RegisterInstance(instance);
+        Build.Locator.MSBuildLocator.RegisterInstance(instance);
+
+        services.AddSingleton(nupendenciesOptions.AzureDevOpsOptions);
+
+        services.AddInitializers()
+            .AddSingleton<AzureDevOpsInitializer>();
         
         services.AddSingleton<INetSdkProvider, NetSdkProvider>()
             .AddSingleton<ISdkFinder, SdkFinder>()
@@ -37,15 +46,19 @@ public static class DependencyInjectionExtensions
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(nupendenciesOptions.GithubOptions.PatToken)));
             client.BaseAddress = new Uri("https://api.github.com/");
         });
-            
-        services.AddHttpClient<DevOpsHttpClient>(client =>
+
+        services.AddSingleton(sp =>
         {
             var azureDevOpsOptions = nupendenciesOptions.AzureDevOpsOptions;
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                Convert.ToBase64String(Encoding.ASCII.GetBytes(azureDevOpsOptions.PatToken)));
-            client.BaseAddress = new Uri($"https://dev.azure.com/{azureDevOpsOptions.Organization}/{azureDevOpsOptions.Project}/_apis/");
+
+            var uri = new UriBuilder($"https://dev.azure.com")
+            {
+                Path = $"/{azureDevOpsOptions.Organization}"
+            }.Uri;
+
+            return new VssConnection(uri, new VssBasicCredential(string.Empty, azureDevOpsOptions.PatToken));
         });
-        
+
         services.AddSingleton<NuGetClient>();
             
         services.AddSingleton<IGithubGraphQlClientProvider, GithubGraphQlClientProvider>()
@@ -54,7 +67,7 @@ public static class DependencyInjectionExtensions
             .AddTransient<IGitCredentialsProvider, GitCredentialsProvider>()
             .AddTransient<IRepositoryCloner, RepositoryCloner>()
             .AddTransient<IRepositoryProcessorService, RepositoryProcessorService>()
-            .AddTransient<ISolutionUpdater, SolutionUpdater>()
+            .AddTransient<ICodeRepositoryUpdater, CodeRepositoryUpdater>()
             .AddTransient<ISolutionBuilder, SolutionBuilder>()
             .AddTransient<INupendencyUpdater, NupendencyUpdater>()
             .AddTransient<IDirectoryService, DirectoryService>()

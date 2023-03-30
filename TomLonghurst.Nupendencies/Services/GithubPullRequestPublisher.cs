@@ -19,23 +19,23 @@ public class GithubPullRequestPublisher : BasePullRequestPublisher
         _githubGetService = githubGetService;
     }
 
-    protected override async Task<IEnumerable<Pr>> GetOpenPullRequests(Repo repo)
+    protected override async Task<IEnumerable<Pr>> GetOpenPullRequests(GitRepository gitRepository)
     {
-        return await _githubGetService.GetOpenPullRequests(repo.Owner, repo.Name);
+        return await _githubGetService.GetOpenPullRequests(gitRepository.Owner, gitRepository.Name);
     }
 
-    protected override async Task CreatePullRequest(Repo repo, string branchName, string body, int updateCount)
+    protected override async Task CreatePullRequest(GitRepository gitRepository, string branchName, string body, int updateCount)
     {
-        await _githubHttpClient.CreatePullRequest(repo.Owner, repo.Name, GenerateTitle(updateCount), body, branchName, repo.MainBranch);
+        await _githubHttpClient.CreatePullRequest(gitRepository.Owner, gitRepository.Name, GenerateTitle(updateCount), body, branchName, gitRepository.MainBranch);
     }
 
-    protected override async Task ClosePullRequest(Repo repo, Pr pr)
+    protected override async Task ClosePullRequest(GitRepository gitRepository, Pr pr)
     {
-        await _githubHttpClient.ClosePr(repo.Owner, repo.Name, pr.Number);
+        await _githubHttpClient.ClosePr(gitRepository.Owner, gitRepository.Name, pr.Number);
     }
 
-    protected override bool ShouldProcess(Repo repo)
+    protected override bool ShouldProcess(GitRepository gitRepository)
     {
-        return repo.RepositoryType == RepositoryType.Github;
+        return gitRepository.RepositoryType == RepositoryType.Github;
     }
 }

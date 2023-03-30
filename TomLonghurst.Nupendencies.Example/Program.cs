@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies;
 using TomLonghurst.Nupendencies.Extensions;
+using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Services;
 
 public class Program
@@ -39,7 +40,7 @@ public class Program
                 ValidateScopes = true,
                 ValidateOnBuild = true
             });
-        
+
             var nupendencyUpdater = serviceProvider.GetRequiredService<INupendencyUpdater>();
 
             await nupendencyUpdater.Start();

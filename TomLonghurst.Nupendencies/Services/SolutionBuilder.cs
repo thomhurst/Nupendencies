@@ -1,4 +1,5 @@
-﻿using CliWrap;
+﻿using System.Collections.Immutable;
+using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ public class SolutionBuilder : ISolutionBuilder
             .ToList()));
     }
     
-    public async Task<SolutionBuildResult> BuildProjects(IEnumerable<string> projects, string target = "build")
+    public async Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, string target = "build")
     {
         var results = await Build(projects, target);
 
@@ -86,7 +87,7 @@ public class SolutionBuilder : ISolutionBuilder
         return true;
     }*/
 
-    private async Task<List<ProjectBuildResult>> Build(IEnumerable<string> projectsToBuild, string target = "build")
+    private async Task<List<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, string target = "build")
     {
         var results = new List<ProjectBuildResult>();
 
@@ -111,16 +112,14 @@ public class SolutionBuilder : ISolutionBuilder
         return results;
     }
 
-    private bool ShouldBuildUsingLegacyMsBuild(string projectToBuild)
+    private bool ShouldBuildUsingLegacyMsBuild(Project projectToBuild)
     {
-        var projectFile = ProjectRootElement.Open(projectToBuild);
-
-        if (string.IsNullOrEmpty(projectFile.Sdk))
+        if (string.IsNullOrEmpty(projectToBuild.ProjectRootElement.Sdk))
         {
             return true;
         }
 
-        var referenceElements = projectFile.Items.Where(x => x.ItemType == "Reference");
+        var referenceElements = projectToBuild.ProjectRootElement.Items.Where(x => x.ItemType == "Reference");
         if (referenceElements.Any())
         {
             return true;
@@ -133,23 +132,13 @@ public class SolutionBuilder : ISolutionBuilder
         // {
         //     return true;
         // }
+        
+        var childProjects = projectToBuild.Children;
 
-        var directory = Path.GetDirectoryName(projectToBuild);
-        var projectReferences = projectFile.Items.Where(x => x.ItemType == "ProjectReference");
-        
-        foreach (var projectReference in projectReferences)
-        {
-            var fullPath = Path.GetFullPath(Path.Combine(directory, projectReference.Include));
-            if (ShouldBuildUsingLegacyMsBuild(fullPath))
-            {
-                return true;
-            }
-        }
-        
-        return false;
+        return childProjects.Any(ShouldBuildUsingLegacyMsBuild);
     }
 
-    private async Task<ProjectBuildResult> BuildUsingDotnet(string projectToBuild, string target = "build")
+    private async Task<ProjectBuildResult> BuildUsingDotnet(Project projectToBuild, string target = "build")
     {
         var sdk = await _netSdkProvider.GetLatestDotnetSdk();
 
@@ -162,7 +151,7 @@ public class SolutionBuilder : ISolutionBuilder
             };
         }
         
-        if (string.IsNullOrEmpty(projectToBuild))
+        if (string.IsNullOrEmpty(projectToBuild.ProjectPath))
         {
             return new ProjectBuildResult
             {
@@ -173,7 +162,7 @@ public class SolutionBuilder : ISolutionBuilder
         
         var result = await Cli.Wrap("dotnet")
             .WithWorkingDirectory(sdk.Directory)
-            .WithArguments($"{target} \"{projectToBuild}\" --configuration Release")
+            .WithArguments($"{target} \"{projectToBuild.ProjectPath}\" --configuration Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
             .WithEnvironmentVariables(new Dictionary<string, string?>
             {
                 ["VSS_NUGET_EXTERNAL_FEED_ENDPOINTS"] = _azureArtifactsCredentialsJson,
@@ -193,7 +182,7 @@ public class SolutionBuilder : ISolutionBuilder
         };
     }
 
-    private async Task<ProjectBuildResult> BuildUsingLegacyMsBuild(string projectToBuild, string target = "build")
+    private async Task<ProjectBuildResult> BuildUsingLegacyMsBuild(Project projectToBuild, string target = "build")
     {
         var sdk = await _netSdkProvider.GetLatestMSBuild();
 
@@ -206,7 +195,7 @@ public class SolutionBuilder : ISolutionBuilder
             };
         }
         
-        if (string.IsNullOrEmpty(projectToBuild))
+        if (string.IsNullOrEmpty(projectToBuild.ProjectPath))
         {
             return new ProjectBuildResult
             {
@@ -216,8 +205,8 @@ public class SolutionBuilder : ISolutionBuilder
         }
         
         var result = await Cli.Wrap(Path.Combine(sdk.Directory, "MSBuild.exe"))
-                .WithWorkingDirectory(Path.GetDirectoryName(projectToBuild))
-                .WithArguments($"\"{Path.GetFileName(projectToBuild)}\" /restore -t:{target} /p:Configuration=Release")
+                .WithWorkingDirectory(Path.GetDirectoryName(projectToBuild.ProjectPath))
+                .WithArguments($"\"{Path.GetFileName(projectToBuild.ProjectPath)}\" /restore -t:{target} /p:Configuration=Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
                 .WithEnvironmentVariables(new Dictionary<string, string?>
                 {
                     ["VSS_NUGET_EXTERNAL_FEED_ENDPOINTS"] = _azureArtifactsCredentialsJson,

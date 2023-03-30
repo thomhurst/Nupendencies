@@ -1,0 +1,180 @@
+﻿using System.Collections.Immutable;
+using Microsoft.Build.Construction;
+using Microsoft.VisualStudio.Services.Common;
+using Semver;
+
+namespace TomLonghurst.Nupendencies;
+
+public record Project
+{
+    public string Name { get; }
+    public CodeRepository Repository { get; }
+    public string ProjectPath { get; }
+    public string Directory { get; }
+    public HashSet<Project> Parents { get; } = new();
+    public ImmutableHashSet<Project> Children { get; }
+    public ImmutableHashSet<ProjectPackage> Packages { get; }
+    public HashSet<Solution> Solutions { get; } = new();
+    public ProjectRootElement ProjectRootElement { get; }
+
+    public Project(CodeRepository repository, Solution solution, string filePath) : this(repository, new []{ solution }, filePath)
+    {
+    }
+
+    public Project(CodeRepository repository, IEnumerable<Solution> solutions, string filePath)
+    {
+        ProjectPath = filePath;
+
+        Repository = repository;
+
+        Solutions.AddRange(solutions);
+        
+        foreach (var s in Solutions)
+        {
+            s.Projects.Add(this);
+        }
+
+        ProjectRootElement = ProjectRootElement.Open(filePath)!;
+
+        Name = Path.GetFileNameWithoutExtension(filePath);
+        
+        Directory = Path.GetDirectoryName(filePath)!;
+        
+        Packages = ParsePackages(ProjectRootElement);
+        Children = ParseChildren(ProjectRootElement);
+    }
+
+    public IEnumerable<Project> GetUppermostProjectsReferencingThisProject()
+    {
+        return GetUppermostProjects().DistinctBy(x => x.ProjectPath);
+    }
+
+    public ProjectPackage? GetPackage(string packageName)
+    {
+        return Packages.FirstOrDefault(p => string.Equals(p.Name, packageName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public void Save() => ProjectRootElement.Save();
+
+    private IEnumerable<Project> GetUppermostProjects()
+    {
+        if (!Parents.Any())
+        {
+            yield return this;
+            yield break;
+        }
+
+        foreach (var project in Parents.SelectMany(projectParent =>
+                     projectParent.GetUppermostProjectsReferencingThisProject()))
+        {
+            yield return project;
+        }
+    }
+
+    private ImmutableHashSet<ProjectPackage> ParsePackages(ProjectRootElement projectRootElement)
+    {
+        var packages = projectRootElement.Items
+            .Where(i => i.ItemType == "PackageReference")
+            .Select(packageReferenceTag =>
+            {
+                var versionElement = packageReferenceTag.Metadata.FirstOrDefault(m => m.Name == "Version");
+                
+                var version = versionElement?.Value;
+
+                if (string.IsNullOrEmpty(version) || !SemVersion.TryParse(version, SemVersionStyles.Any, out var semVersion))
+                {
+                    return null;
+                }
+                
+                return new ProjectPackage(packageReferenceTag)
+                {
+                    Name = packageReferenceTag.Include,
+                    Project = this,
+                    OriginalVersion = semVersion,
+                    CurrentVersion = semVersion
+                };
+            })
+            .OfType<ProjectPackage>()
+            .ToList();
+
+        DeleteDuplicatePackages();
+        
+        return packages.ToImmutableHashSet();
+
+        void DeleteDuplicatePackages()
+        {
+            foreach (var packageGroup in packages
+                         .GroupBy(x => x.Name)
+                         .Where(x => x.Count() > 1))
+            {
+                var packagesToRemove = packageGroup.OrderByDescending(x => x.OriginalVersion).Skip(1);
+                foreach (var packageToRemove in packagesToRemove)
+                {
+                    var packageReferenceTag = packageToRemove.PackageReferenceTag;
+                    packageReferenceTag.Parent.RemoveChild(packageReferenceTag);
+                    packages.Remove(packageToRemove);
+                }
+            }
+
+            Save();
+        }
+    }
+
+    private ImmutableHashSet<Project> ParseChildren(ProjectRootElement projectRootElement)
+    {
+        var children = projectRootElement.Items
+            .Where(i => i.ItemType == "ProjectReference")
+            .Select(x => x.Include)
+            .Select(GetFullPath)
+            .Where(File.Exists)
+            .Where(path => path != ProjectPath)
+            .Distinct()
+            .Select(path => Repository.GetProject(path) ?? new Project(Repository, Solutions, path))
+            .ToList();
+
+        foreach (var child in children)
+        {
+            child.Solutions.AddRange(Solutions);
+            child.Solutions.ForEach(s => s.Projects.Add(child));
+            child.Parents.Add(this);
+        }
+
+        return children.ToImmutableHashSet();
+    }
+
+    private string GetFullPath(string path)
+    {
+        return Path.IsPathFullyQualified(path) ? path : Path.GetFullPath(path, Directory);
+    }
+
+    private sealed class FilePathEqualityComparer : IEqualityComparer<Project>
+    {
+        public bool Equals(Project? x, Project? y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, null)) return false;
+            if (ReferenceEquals(y, null)) return false;
+            if (x.GetType() != y.GetType()) return false;
+            return x.ProjectPath == y.ProjectPath;
+        }
+
+        public int GetHashCode(Project obj)
+        {
+            return obj.ProjectPath.GetHashCode();
+        }
+    }
+
+    public static IEqualityComparer<Project> Comparer { get; } = new FilePathEqualityComparer();
+
+    public virtual bool Equals(Project? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return ProjectPath == other.ProjectPath;
+    }
+
+    public override int GetHashCode()
+    {
+        return ProjectPath.GetHashCode();
+    }
+}

@@ -1,30 +1,37 @@
-﻿using TomLonghurst.Nupendencies.Clients;
+﻿using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Models;
-using TomLonghurst.Nupendencies.Models.DevOps;
+using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class DevOpsGetService : IDevOpsGetService
 {
-    private readonly DevOpsHttpClient _devOpsHttpClient;
+    private readonly VssConnection _vssConnection;
+    private readonly AzureDevOpsOptions _azureDevOpsOptions;
 
-    public DevOpsGetService(DevOpsHttpClient devOpsHttpClient)
+    public DevOpsGetService(VssConnection vssConnection, AzureDevOpsOptions azureDevOpsOptions)
     {
-        _devOpsHttpClient = devOpsHttpClient;
+        _vssConnection = vssConnection;
+        _azureDevOpsOptions = azureDevOpsOptions;
     }
 
-    public async Task<IEnumerable<Repo>> GetRepositories()
+    public async Task<IEnumerable<GitRepository>> GetRepositories()
     {
-        var azureRepos = await _devOpsHttpClient.GetGitRepositories();
-
-        return azureRepos.Select(MapRepo).ToList();
+        var azureRepos = await _vssConnection.GetClient<GitHttpClient>().GetRepositoriesAsync(_azureDevOpsOptions.ProjectGuid);
+        return azureRepos
+            .Where(x => x.IsDisabled != true)
+            .Select(MapRepo)
+            .ToList();
     }
 
     public async Task<IEnumerable<Pr>> GetOpenPullRequests(string repoId)
     {
-        var devOpsPullRequests = await _devOpsHttpClient.GetPullRequestsForRepository(repoId);
-
-        return devOpsPullRequests.Select(MapPullRequest).ToList();
+        var devOpsPullRequests = await _vssConnection.GetClient<GitHttpClient>().GetPullRequestsAsync(_azureDevOpsOptions.ProjectGuid, repoId, new GitPullRequestSearchCriteria(), top: 100);
+        return devOpsPullRequests
+            .Where(x => x.Status == PullRequestStatus.Active)
+            .Select(MapPullRequest)
+            .ToList();
     }
 
     private async Task<IEnumerable<Iss>> GetIssues()
@@ -33,7 +40,7 @@ public class DevOpsGetService : IDevOpsGetService
         return new List<Iss>();
     }
 
-    private Pr MapPullRequest(DevOpsPullRequest arg)
+    private Pr MapPullRequest(GitPullRequest arg)
     {
         return new Pr
         {
@@ -41,17 +48,17 @@ public class DevOpsGetService : IDevOpsGetService
             Id = arg.PullRequestId.ToString(),
             Number = arg.PullRequestId,
             Title = arg.Title,
-            HasConflicts = arg.MergeStatus == "conflicts"
+            HasConflicts = arg.MergeStatus == PullRequestAsyncStatus.Conflicts
         };
     }
 
-    private Repo MapRepo(DevOpsGitRepository devOpsGitRepository)
+    private GitRepository MapRepo(global::Microsoft.TeamFoundation.SourceControl.WebApi.GitRepository devOpsGitRepository)
     {
-        return new Repo(RepositoryType.AzureDevOps)
+        return new GitRepository(RepositoryType.AzureDevOps)
         {
-            Id = devOpsGitRepository.Id,
+            Id = devOpsGitRepository.Id.ToString(),
             Name = devOpsGitRepository.Name,
-            Owner = devOpsGitRepository.Project.Name,
+            Owner = devOpsGitRepository.ProjectReference.Name,
             GitUrl = devOpsGitRepository.RemoteUrl,
             Issues = new List<Iss>(),
             IsDisabled = false,

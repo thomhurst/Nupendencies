@@ -1,41 +1,63 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Models.DevOps;
+using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class DevOpsPullRequestPublisher : BasePullRequestPublisher
 {
     private readonly IDevOpsGetService _devOpsGetService;
-    private readonly DevOpsHttpClient _devOpsHttpClient;
+    private readonly VssConnection _vssConnection;
+    private readonly AzureDevOpsOptions _azureDevOpsOptions;
 
     public DevOpsPullRequestPublisher(NupendenciesOptions nupendenciesOptions, 
-        IDevOpsGetService devOpsGetService, 
-        DevOpsHttpClient devOpsHttpClient,
+        IDevOpsGetService devOpsGetService,
         IGitCredentialsProvider gitCredentialsProvider,
-        ILogger<DevOpsPullRequestPublisher> logger) : base(nupendenciesOptions, gitCredentialsProvider, logger)
+        ILogger<DevOpsPullRequestPublisher> logger,
+        VssConnection vssConnection,
+        AzureDevOpsOptions azureDevOpsOptions) : base(nupendenciesOptions, gitCredentialsProvider, logger)
     {
         _devOpsGetService = devOpsGetService;
-        _devOpsHttpClient = devOpsHttpClient;
+        _vssConnection = vssConnection;
+        _azureDevOpsOptions = azureDevOpsOptions;
     }
 
-    protected override async Task<IEnumerable<Pr>> GetOpenPullRequests(Repo repo)
+    protected override async Task<IEnumerable<Pr>> GetOpenPullRequests(GitRepository gitRepository)
     {
-        return await _devOpsGetService.GetOpenPullRequests(repo.Id);
+        return await _devOpsGetService.GetOpenPullRequests(gitRepository.Id);
     }
 
-    protected override async Task CreatePullRequest(Repo repo, string branchName, string body, int updateCount)
+    protected override async Task CreatePullRequest(GitRepository gitRepository, string branchName, string body, int updateCount)
     {
-        await _devOpsHttpClient.CreatePullRequest(repo.Id, GenerateTitle(updateCount), body, branchName, repo.MainBranch);
+        await _vssConnection.GetClient<GitHttpClient>().CreatePullRequestAsync(new GitPullRequest()
+            {
+                Title = GenerateTitle(updateCount),
+                Description = body,
+                TargetRefName = gitRepository.MainBranch,
+                SourceRefName = $"refs/heads/{branchName}",
+                WorkItemRefs = _nupendenciesOptions.AzureDevOpsOptions.WorkItemIds?.Select(workItemId => new ResourceRef { Id = workItemId }).ToArray()
+            },
+            project: _azureDevOpsOptions.ProjectGuid,
+            repositoryId: gitRepository.Id);
     }
 
-    protected override async Task ClosePullRequest(Repo repo, Pr pr)
+    protected override async Task ClosePullRequest(GitRepository gitRepository, Pr pr)
     {
-        await _devOpsHttpClient.ClosePr(repo.Id, pr.Number);
+        await _vssConnection.GetClient<GitHttpClient>().UpdatePullRequestAsync(new GitPullRequest()
+            {
+                Status = PullRequestStatus.Abandoned
+            },
+            project: _azureDevOpsOptions.ProjectGuid,
+            repositoryId: gitRepository.Id,
+            pullRequestId: pr.Number);
     }
 
-    protected override bool ShouldProcess(Repo repo)
+    protected override bool ShouldProcess(GitRepository gitRepository)
     {
-        return repo.RepositoryType == RepositoryType.AzureDevOps;
+        return gitRepository.RepositoryType == RepositoryType.AzureDevOps;
     }
 }

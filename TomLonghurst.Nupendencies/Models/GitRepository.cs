@@ -1,8 +1,8 @@
 ﻿namespace TomLonghurst.Nupendencies.Models;
 
-public class Repo
+public class GitRepository
 {
-    public Repo(RepositoryType repositoryType)
+    public GitRepository(RepositoryType repositoryType)
     {
         RepositoryType = repositoryType;
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -11,13 +12,15 @@ public class NupendencyUpdater : INupendencyUpdater
     private readonly NupendenciesOptions _nupendenciesOptions;
     private readonly IDirectoryService _directoryService;
     private readonly ILogger<NupendencyUpdater> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public NupendencyUpdater(IGithubGetService githubGetService,
         IDevOpsGetService devOpsGetService,
         IRepositoryProcessorService repositoryProcessorService,
         NupendenciesOptions nupendenciesOptions,
         IDirectoryService directoryService,
-        ILogger<NupendencyUpdater> logger)
+        ILogger<NupendencyUpdater> logger,
+        IServiceProvider serviceProvider)
     {
         _githubGetService = githubGetService;
         _devOpsGetService = devOpsGetService;
@@ -25,10 +28,13 @@ public class NupendencyUpdater : INupendencyUpdater
         _nupendenciesOptions = nupendenciesOptions;
         _directoryService = directoryService;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task Start()
     {
+        await _serviceProvider.InitializeAsync();
+        
         _directoryService.TryCleanup();
 
         var gitHubRepositoriesTask = _githubGetService.GetRepositories();
@@ -46,7 +52,7 @@ public class NupendencyUpdater : INupendencyUpdater
 
     }
 
-    private async Task Process(Repo repository)
+    private async Task Process(GitRepository repository)
     {
         try
         {
@@ -59,13 +65,13 @@ public class NupendencyUpdater : INupendencyUpdater
         }
     }
 
-    private bool ShouldScanRepository(Repo repo)
+    private bool ShouldScanRepository(GitRepository gitRepository)
     {
         if (!_nupendenciesOptions.RepositoriesToScan.Any())
         {
             return true;
         }
 
-        return _nupendenciesOptions.RepositoriesToScan.Any(func => func.Invoke(repo));
+        return _nupendenciesOptions.RepositoriesToScan.Any(func => func.Invoke(gitRepository));
     }
 }

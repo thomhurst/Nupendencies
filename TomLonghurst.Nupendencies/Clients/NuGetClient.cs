@@ -28,9 +28,9 @@ public class NuGetClient
 
         var tasks = _nupendenciesOptions?.PrivateNugetFeedOptions?
             .Select(x => GetNugetRepository(x.SourceUrl, x.Username, x.PatToken))
-            .ToList();
+            .ToArray() ?? Array.Empty<Task<PackageMetadataResource>>();
 
-        var privateFeeds = await Task.WhenAll(tasks ?? new List<Task<PackageMetadataResource>>());
+        var privateFeeds = await Task.WhenAll(tasks);
 
         return new[] { baseNuget }.Concat(privateFeeds).ToList();
     }
@@ -50,19 +50,24 @@ public class NuGetClient
         }
 
         var repository = Repository.Factory.GetCoreV3(packageSource);
+        
         return await repository.GetResourceAsync<PackageMetadataResource>();
     }
     
-    public async Task<NuGetPackageInformation?[]> GetPackages(IEnumerable<string> packageNames)
+    public async Task<NuGetPackageInformation[]> GetPackages(IEnumerable<string> packageNames)
     {
-        return await Task.WhenAll(packageNames.Select(x => GetPackage(x)));
+        var nuGetPackageInformations = await Task.WhenAll(packageNames.Select(x => GetPackage(x)));
+        
+        return nuGetPackageInformations
+            .OfType<NuGetPackageInformation>()
+            .ToArray();
     }
 
-    public async Task<NuGetPackageInformation?> GetPackage(string? packageName, string version = null)
+    public async Task<NuGetPackageInformation?> GetPackage(string packageName, string version = null)
     {
         _nugetRepositories ??= await GetNuGetRepositories();
 
-        if(_memoryCache.TryGetValue(packageName + version, out NuGetPackageInformation nuGetPackageInformation))
+        if(_memoryCache.TryGetValue(packageName + version, out NuGetPackageInformation? nuGetPackageInformation))
         {
             _logger.LogDebug("Getting cached version of NuGet Package {PackageName}", packageName);
             return nuGetPackageInformation;
@@ -84,13 +89,13 @@ public class NuGetClient
                 var cacheForThisNugetRepo =
                     _memoryCache.GetOrCreate(packageMetadataResource, entry => new SourceCacheContext());
                 
-                var packageMetadatas = await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: false, includeUnlisted: false,
-                    cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None);
+                var packageMetadatas = (await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: false, includeUnlisted: false,
+                    cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None)).ToList();
 
                 if (packageMetadatas?.Any() != true)
                 {
-                    packageMetadatas = await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: true, includeUnlisted: false,
-                        cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None);
+                    packageMetadatas = (await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: true, includeUnlisted: false,
+                        cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None)).ToList();
                 }
             
                 if (packageMetadatas?.Any() != true)
@@ -104,6 +109,16 @@ public class NuGetClient
                     .Where(p => !p.Identity.Version.IsPrerelease)
                     .OrderByDescending(x => x.Identity.Version)
                     .ToList();
+
+                if (!string.IsNullOrEmpty(version))
+                {
+                    var specifiedVersion = packagesWithVersions.FirstOrDefault(x => x.Identity.Version.OriginalVersion == version);
+                    if (specifiedVersion is not null)
+                    {
+                        packageSearchMetadatas.Add(specifiedVersion);
+                        break;
+                    }
+                }
 
                 var maxVersion = packagesWithVersions.FirstOrDefault();
 
@@ -119,7 +134,7 @@ public class NuGetClient
             }
         }
 
-        if (!packageSearchMetadatas.Any())
+        if (!packageSearchMetadatas.Any() && !string.IsNullOrEmpty(version))
         {
             _memoryCache.Set(packageName, new NullInstance());
             return null;
@@ -130,16 +145,11 @@ public class NuGetClient
         var packageInformation = new NuGetPackageInformation
         {
             PackageName = packageName,
-            Version = packageSearchMetadata.Identity.Version,
+            Version = packageSearchMetadata!.Identity.Version,
             Dependencies = packageSearchMetadata.DependencySets
                 .SelectMany(x => x.Packages)
                 .ToList()
         };
-
-        if (packageName == "Sharpliner")
-        {
-            Console.Write("Break");
-        }
 
         _memoryCache.Set(packageName + version, packageInformation);
         

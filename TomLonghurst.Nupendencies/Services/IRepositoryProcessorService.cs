@@ -4,5 +4,5 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public interface IRepositoryProcessorService
 {
-    Task Process(Repo repo);
+    Task Process(GitRepository gitRepository);
 }

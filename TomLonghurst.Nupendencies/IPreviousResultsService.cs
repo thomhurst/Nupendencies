@@ -2,6 +2,6 @@
 
 public interface IPreviousResultsService
 {
-    void WriteUnableToRemovePackageEntry(string packageName, string project);
-    bool ShouldTryRemove(string packageName, string project);
+    void WriteUnableToRemovePackageEntry(ProjectPackage package);
+    bool ShouldTryRemove(ProjectPackage package);
 }

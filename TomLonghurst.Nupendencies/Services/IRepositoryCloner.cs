@@ -4,5 +4,5 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public interface IRepositoryCloner
 {
-    string CloneRepo(Repo repo);
+    string CloneRepository(GitRepository gitRepository);
 }

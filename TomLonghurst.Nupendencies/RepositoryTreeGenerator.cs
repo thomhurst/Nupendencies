@@ -8,7 +8,7 @@ namespace TomLonghurst.Nupendencies;
 
 public class RepositoryTreeGenerator : IRepositoryTreeGenerator
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<RepositoryTreeGenerator> _logger;
     private readonly IPackageVersionScanner _packageVersionScanner;
 
     public RepositoryTreeGenerator(ILogger<RepositoryTreeGenerator> logger,

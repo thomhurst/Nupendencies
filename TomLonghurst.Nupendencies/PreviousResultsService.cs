@@ -7,6 +7,7 @@ public class PreviousResultsService : IPreviousResultsService, IAsyncDisposable
 {
     private readonly ConcurrentBag<PreviousProblem> _previousResults;
     private bool _shouldSave;
+    private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
     public PreviousResultsService()
     {
@@ -33,16 +34,16 @@ public class PreviousResultsService : IPreviousResultsService, IAsyncDisposable
         Task.Factory.StartNew(SavePeriodically, TaskCreationOptions.LongRunning);
     }
 
-    public void WriteUnableToRemovePackageEntry(string packageName, string project)
+    public void WriteUnableToRemovePackageEntry(ProjectPackage package)
     {
-        _previousResults.Add(new PreviousProblem(DateTimeOffset.UtcNow, packageName, project, PreviousProblemReason.UnableToRemoveDependency));
+        _previousResults.Add(new PreviousProblem(DateTimeOffset.UtcNow, package.Name, package.Project.ProjectPath, PreviousProblemReason.UnableToRemoveDependency));
         _shouldSave = true;
     }
 
-    public bool ShouldTryRemove(string packageName, string project)
+    public bool ShouldTryRemove(ProjectPackage package)
     {
-        return !_previousResults.Any(x => x.PackageName == packageName
-                                          && Path.GetFileName(x.Project) == Path.GetFileName(project)
+        return !_previousResults.Any(x => x.PackageName == package.Name
+                                          && Path.GetFileName(x.Project) == Path.GetFileName(package.Project.ProjectPath)
                                           && x.PreviousProblemReason == PreviousProblemReason.UnableToRemoveDependency
         );
     }
@@ -50,6 +51,8 @@ public class PreviousResultsService : IPreviousResultsService, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await Save();
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
     }
 
     private string GetPath()
@@ -60,7 +63,7 @@ public class PreviousResultsService : IPreviousResultsService, IAsyncDisposable
 
     private async Task SavePeriodically()
     {
-        while (true)
+        while (!_cancellationTokenSource.Token.IsCancellationRequested)
         {
             await Task.Delay(TimeSpan.FromMinutes(1));
             await Save();

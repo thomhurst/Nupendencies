@@ -19,18 +19,18 @@ public class RepositoryCloner : IRepositoryCloner
         _logger = logger;
     }
 
-    public string CloneRepo(Repo repo)
+    public string CloneRepository(GitRepository gitRepository)
     {
         var tempDirectory = _directoryService.CreateTemporaryDirectory();
         
         _logger.LogDebug("Creating Directory: {Directory}", tempDirectory);
 
-        Repository.Clone(repo.GitUrl, Path.Combine(tempDirectory, repo.Name), new CloneOptions
+        LibGit2Sharp.Repository.Clone(gitRepository.GitUrl, Path.Combine(tempDirectory, gitRepository.Name), new CloneOptions
         {
-            CredentialsProvider = (url, fromUrl, types) => _gitCredentialsProvider.GetCredentials(repo.RepositoryType, types)
+            CredentialsProvider = (url, fromUrl, types) => _gitCredentialsProvider.GetCredentials(gitRepository.RepositoryType, types)
         });
 
-        _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", repo.Name, tempDirectory);
+        _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", gitRepository.Name, tempDirectory);
 
         return tempDirectory;
     }
