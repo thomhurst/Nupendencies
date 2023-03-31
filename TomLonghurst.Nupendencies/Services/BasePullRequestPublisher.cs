@@ -11,13 +11,13 @@ namespace TomLonghurst.Nupendencies.Services;
 public class PullRequestPublisher : IPullRequestPublisher
 {
     private readonly NupendenciesOptions _nupendenciesOptions;
-    private readonly ILogger _logger;
+    private readonly ILogger<PullRequestPublisher> _logger;
 
     private const string NupendencyPrTitleSuffix = "## Nupendencies Automated PR ##";
 
     private const string PrBodyPrefix = "This is an automated pull request by the Nupendencies scanning tool";
 
-    public PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger logger)
+    public PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger<PullRequestPublisher> logger)
     {
         _nupendenciesOptions = nupendenciesOptions;
         _logger = logger;
