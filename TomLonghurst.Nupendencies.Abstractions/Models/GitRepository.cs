@@ -17,7 +17,7 @@ public record GitRepository
 
     public required List<GitIssue> Issues { get; init; }
 
-    public required string GitUrl { get; init; }
+    public required string GitUrl { get; set; }
 
     public required string MainBranch { get; init; }
 }

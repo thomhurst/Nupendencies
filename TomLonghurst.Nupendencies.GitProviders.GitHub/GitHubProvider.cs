@@ -2,6 +2,7 @@
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Abstractions.Contracts;
+using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
@@ -45,7 +46,7 @@ public class GitHubProvider : IGitProvider
                 Name = r.Name,
                 Id = r.Id.Value,
                 IsDisabled = r.IsDisabled || r.IsArchived,
-                GitUrl = r.SshUrl.Replace("git@github.com:", "https://github.com/"),
+                GitUrl = r.SshUrl,
                 MainBranch = r.DefaultBranchRef.Name,
                 Issues = r.Issues(null, null, null, null, null, null, new IssueOrder
                         {
@@ -67,7 +68,11 @@ public class GitHubProvider : IGitProvider
                     .ToList()
             }).Compile();
 
-        return await _githubGraphQlClientProvider.GitHubGraphQlClient.Run(query);
+        var repositories = (await _githubGraphQlClientProvider.GitHubGraphQlClient.Run(query)).ToList();
+        
+        repositories.ForEach(r => r.GitUrl = r.GitUrl.Replace("git@github.com:", "https://github.com/"));
+        
+        return repositories;
     }
 
     public async Task<IEnumerable<GitPullRequest>> GetOpenPullRequests(GitRepository repository)
