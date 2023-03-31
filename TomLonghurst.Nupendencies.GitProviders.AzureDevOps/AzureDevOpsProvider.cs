@@ -1,4 +1,5 @@
-﻿using Microsoft.TeamFoundation.SourceControl.WebApi;
+﻿using LibGit2Sharp;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
@@ -22,7 +23,7 @@ public class AzureDevOpsProvider : IGitProvider
         _pullRequestService = pullRequestService;
         _azureDevOpsOptions = azureDevOpsOptions;
     }
-
+    
     public async Task<IEnumerable<GitRepository>> GetRepositories()
     {
         var azureRepos = await _vssConnection.GetClient<GitHttpClient>().GetRepositoriesAsync(_azureDevOpsOptions.ProjectGuid);
@@ -53,7 +54,7 @@ public class AzureDevOpsProvider : IGitProvider
         return Task.FromResult<IEnumerable<GitIssue>>(Array.Empty<GitIssue>());
     }
 
-    public Task CreateIssues(GitRepository repository, UpdateReport updateReport)
+    public Task CreateIssue(GitRepository repository, string title, string body)
     {
         // TODO - Issues isn't a concept on DevOps. Work Items?
         return Task.CompletedTask;
@@ -69,6 +70,12 @@ public class AzureDevOpsProvider : IGitProvider
     {
         return new GitRepository
         {
+            Provider = this,
+            Credentials = new UsernamePasswordCredentials
+            {
+                Username = _azureDevOpsOptions.AuthenticationUsername,
+                Password = _azureDevOpsOptions.AuthenticationPatToken
+            },
             Id = devOpsGitRepository.Id.ToString(),
             Name = devOpsGitRepository.Name,
             Owner = devOpsGitRepository.ProjectReference.Name,
@@ -78,4 +85,6 @@ public class AzureDevOpsProvider : IGitProvider
             MainBranch = devOpsGitRepository.DefaultBranch
         };
     }
+
+    public int PullRequestBodyCharacterLimit => 400;
 }

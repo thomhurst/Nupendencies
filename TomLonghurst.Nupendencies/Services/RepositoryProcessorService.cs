@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
-using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 

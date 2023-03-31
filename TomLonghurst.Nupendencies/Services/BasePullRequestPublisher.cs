@@ -1,40 +1,33 @@
 ﻿using System.Text;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Options;
-using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 
-public abstract class BasePullRequestPublisher : IPullRequestPublisher
+public class PullRequestPublisher : IPullRequestPublisher
 {
-    protected readonly NupendenciesOptions NupendenciesOptions;
-    private readonly IGitCredentialsProvider _gitCredentialsProvider;
+    private readonly NupendenciesOptions _nupendenciesOptions;
     private readonly ILogger _logger;
 
     private const string NupendencyPrTitleSuffix = "## Nupendencies Automated PR ##";
 
     private const string PrBodyPrefix = "This is an automated pull request by the Nupendencies scanning tool";
 
-    protected BasePullRequestPublisher(NupendenciesOptions nupendenciesOptions, IGitCredentialsProvider gitCredentialsProvider, ILogger logger)
+    protected PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger logger)
     {
-        NupendenciesOptions = nupendenciesOptions;
-        _gitCredentialsProvider = gitCredentialsProvider;
+        _nupendenciesOptions = nupendenciesOptions;
         _logger = logger;
     }
     
     public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository,
         UpdateReport updateReport)
     {
-        if (!ShouldProcess(gitRepository))
-        {
-            return;
-        }
-
+        var gitProvider = gitRepository.Provider;
+        
         var packageUpdateResults = updateReport.UpdatedPackagesResults;
         var deletionUpdateResults = updateReport.UnusedRemovedPackagesResults;
         
@@ -46,7 +39,7 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
             return;
         }
 
-        var existingOpenPrs = (await GetOpenPullRequests(gitRepository)).ToList();
+        var existingOpenPrs = (await gitProvider.GetOpenPullRequests(gitRepository)).ToList();
         var prBody = GenerateBody(packageUpdateResults);
 
         var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
@@ -60,7 +53,7 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
         if (matchingPrWithSamePackageUpdates != null)
         {
             _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it has conflicts", matchingPrWithSamePackageUpdates.Number, gitRepository.Name);
-            await ClosePullRequest(gitRepository, matchingPrWithSamePackageUpdates);
+            await gitProvider.ClosePullRequest(gitRepository, matchingPrWithSamePackageUpdates);
         }
 
         var matchingPrWithOtherStaleUpdates = existingOpenPrs.FirstOrDefault(pr => pr.Body.StartsWith(PrBodyPrefix));
@@ -68,26 +61,29 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
         {
             // There is an open PR that is stale. Close it and open a new one.
             _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it is stale", matchingPrWithOtherStaleUpdates.Number, gitRepository.Name);
-            await ClosePullRequest(gitRepository, matchingPrWithOtherStaleUpdates);
+            await gitProvider.ClosePullRequest(gitRepository, matchingPrWithOtherStaleUpdates);
         }
 
         var branchName = $"feature/nupendencies-{DateTime.UtcNow.Ticks}";
-        await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, gitRepository.Name)), branchName, gitRepository.RepositoryType);
+        await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, gitRepository.Name)), branchName, gitRepository.Credentials);
 
         _logger.LogDebug("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
         
-        await CreatePullRequest(gitRepository, branchName, prBody, successfulUpdatesCount);
+        await gitProvider.CreatePullRequest(
+            new CreatePullRequestModel()
+            {
+                UpdateReport = updateReport,
+                Repository = gitRepository,
+                Title = GenerateTitle(successfulUpdatesCount),
+                Body = prBody,
+                BaseBranch = gitRepository.MainBranch,
+                HeadBranch = GetBranchName(branchName)
+            });
     }
 
-    private static Pr? MatchingPrWithSamePackageUpdates(GitRepository gitRepository, IEnumerable<Pr> existingOpenPrs, string prBody)
+    private static GitPullRequest? MatchingPrWithSamePackageUpdates(GitRepository gitRepository, IEnumerable<GitPullRequest> existingOpenPrs, string prBody)
     {
-        if (gitRepository.RepositoryType == RepositoryType.AzureDevOps)
-        {
-            // Azure truncates to 400 characters wtf
-            return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(400));
-        }
-        
-        return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody);
+        return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(gitRepository.Provider.PullRequestBodyCharacterLimit));
     }
 
     protected string GenerateTitle(int updateCount)
@@ -121,7 +117,7 @@ If the build does not succeed, please manually test the pull request and fix any
         return sb.ToString();
     }
 
-    private Task PushChangesToRemoteBranch(IRepository repo, string branchName, RepositoryType repoRepositoryType)
+    private Task PushChangesToRemoteBranch(IRepository repo, string branchName, Credentials credentials)
     {
         _logger.LogDebug("Starting Push to Branch {BranchName}", branchName);
 
@@ -145,7 +141,7 @@ If the build does not succeed, please manually test the pull request and fix any
             
             repo.Network.Push(branch, new PushOptions
             {
-                CredentialsProvider = (_, _, types) => _gitCredentialsProvider.GetCredentials(repoRepositoryType, types)
+                CredentialsProvider = (_, _, types) => credentials
             });
         }
 
@@ -156,11 +152,11 @@ If the build does not succeed, please manually test the pull request and fix any
 
     private Signature GetSignature()
     {
-        return new Signature(NupendenciesOptions.CommitterName, NupendenciesOptions.CommitterEmail, DateTimeOffset.UtcNow);
+        return new Signature(_nupendenciesOptions.CommitterName, _nupendenciesOptions.CommitterEmail, DateTimeOffset.UtcNow);
     }
 
-    protected abstract Task<IEnumerable<Pr>> GetOpenPullRequests(GitRepository gitRepository);
-    protected abstract Task ClosePullRequest(GitRepository gitRepository, Pr pr);
-    protected abstract Task CreatePullRequest(GitRepository gitRepository, string branchName, string body, int updateCount);
-    protected abstract bool ShouldProcess(GitRepository gitRepository);
+    private static string GetBranchName(string branchName)
+    {
+        return branchName.StartsWith("refs/") ? branchName : $"refs/heads/{branchName}";
+    }
 }

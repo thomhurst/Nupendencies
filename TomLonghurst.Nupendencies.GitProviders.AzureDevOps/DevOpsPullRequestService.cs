@@ -1,7 +1,5 @@
-﻿using Microsoft.Azure.Pipelines.WebApi;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
+﻿using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
-using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
 using GitPullRequest = Microsoft.TeamFoundation.SourceControl.WebApi.GitPullRequest;

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Microsoft.VisualBasic;
 using Octokit.GraphQL;
 using TomLonghurst.Nupendencies.Abstractions;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
@@ -14,13 +13,6 @@ internal class GitHubGraphQlClientProvider : IGitHubGraphQlClientProvider
     {
         var version = Assembly.GetAssembly(typeof(GitHubGraphQlClientProvider))?.GetName()?.Version?.ToString() ?? "1.0";
 
-        var accessToken = gitHubOptions.PatToken;
-
-        if (accessToken.Contains(':'))
-        {
-            accessToken = accessToken.Split(':').Last();
-        }
-        
-        GitHubGraphQlClient = new Connection(new ProductHeaderValue(NupendencyConstants.AppName, version), accessToken);
+        GitHubGraphQlClient = new Connection(new ProductHeaderValue(NupendencyConstants.AppName, version), gitHubOptions.AuthenticationPatToken);
     }
 }

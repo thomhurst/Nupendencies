@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
+using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Options;
@@ -8,24 +9,21 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public class NupendencyUpdater : INupendencyUpdater
 {
-    private readonly IGitHubGetService _githubGetService;
-    private readonly IDevOpsGetService _devOpsGetService;
+    private readonly IEnumerable<IGitProvider> _gitProviders;
     private readonly IRepositoryProcessorService _repositoryProcessorService;
     private readonly NupendenciesOptions _nupendenciesOptions;
     private readonly IDirectoryService _directoryService;
     private readonly ILogger<NupendencyUpdater> _logger;
     private readonly IServiceProvider _serviceProvider;
 
-    public NupendencyUpdater(IGitHubGetService githubGetService,
-        IDevOpsGetService devOpsGetService,
+    public NupendencyUpdater(IEnumerable<IGitProvider> gitProviders,
         IRepositoryProcessorService repositoryProcessorService,
         NupendenciesOptions nupendenciesOptions,
         IDirectoryService directoryService,
         ILogger<NupendencyUpdater> logger,
         IServiceProvider serviceProvider)
     {
-        _githubGetService = githubGetService;
-        _devOpsGetService = devOpsGetService;
+        _gitProviders = gitProviders;
         _repositoryProcessorService = repositoryProcessorService;
         _nupendenciesOptions = nupendenciesOptions;
         _directoryService = directoryService;
@@ -38,13 +36,11 @@ public class NupendencyUpdater : INupendencyUpdater
         await _serviceProvider.InitializeAsync();
         
         _directoryService.TryCleanup();
+        
+        var repositories = await Task.WhenAll(_gitProviders.Select(x => x.GetRepositories()));
 
-        var gitHubRepositoriesTask = _githubGetService.GetRepositories();
-        var devOpsRepositoriesTask = _devOpsGetService.GetRepositories();
-
-        var allRepos = await Task.WhenAll(gitHubRepositoriesTask, devOpsRepositoriesTask);
-
-        var repositoriesToInclude = allRepos.SelectMany(r => r)
+        var repositoriesToInclude = repositories
+            .SelectMany(r => r)
             .Where(ShouldScanRepository);
 
         foreach (var repository in repositoriesToInclude)
@@ -67,13 +63,13 @@ public class NupendencyUpdater : INupendencyUpdater
         }
     }
 
-    private bool ShouldScanRepository(GitRepository gitRepository)
+    private bool ShouldScanRepository(GitRepository repository)
     {
         if (!_nupendenciesOptions.RepositoriesToScan.Any())
         {
             return true;
         }
 
-        return _nupendenciesOptions.RepositoriesToScan.Any(func => func.Invoke(gitRepository));
+        return _nupendenciesOptions.RepositoriesToScan.Any(func => func.Invoke(repository));
     }
 }

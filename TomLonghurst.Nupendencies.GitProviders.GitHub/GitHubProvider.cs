@@ -1,4 +1,5 @@
-﻿using Octokit.GraphQL;
+﻿using LibGit2Sharp;
+using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
@@ -34,6 +35,12 @@ public class GitHubProvider : IGitProvider
             .AllPages()
             .Select(r => new GitRepository
             {
+                Provider = this,
+                Credentials = new UsernamePasswordCredentials
+                {
+                    Username = _githubOptions.AuthenticationUsername,
+                    Password = _githubOptions.AuthenticationPatToken
+                },
                 Owner = r.Owner.Login,
                 Name = r.Name,
                 Id = r.Id.Value,
@@ -83,14 +90,9 @@ public class GitHubProvider : IGitProvider
         return await _gitHubIssuerService.GetCurrentIssues(repository);
     }
 
-    public async Task CreateIssues(GitRepository repository, UpdateReport updateReport)
+    public async Task CreateIssue(GitRepository repository, string title, string body)
     {
-        foreach (var failedPackageUpgrade in updateReport.UpdatedPackagesResults.Where(x => !x.UpdateBuiltSuccessfully))
-        {
-            await _gitHubIssuerService.RaiseIssue(repository, failedPackageUpgrade);
-        }
-
-        // TODO: Unused Dependencies and Target Framework
+        await _gitHubIssuerService.RaiseIssue(repository, title, body);
     }
 
     public async Task CloseIssue(GitRepository repository, GitIssue issue)
