@@ -39,12 +39,12 @@ public class SdkFinder : ISdkFinder
 
             var repositoryRoot = Path.Combine(workingDirectory!, @"..\..\..\..\");
 
-            var buildLocatorCsProj = Directory.GetFiles(repositoryRoot, "TomLonghurst.Nupendencies.NetSdkLocator.csproj",
+            var buildLocatorCsProj = Directory.GetFiles(workingDirectory, "TomLonghurst.Nupendencies.NetSdkLocator.dll",
                 SearchOption.AllDirectories).First();
 
             var buildLocatorDirectory = Path.GetDirectoryName(buildLocatorCsProj)!;
 
-            var resultNetCore = await ExecuteLocator(buildLocatorDirectory, "net6.0");
+            var resultNetCore = await ExecuteLocator(buildLocatorDirectory, "net7.0");
             var resultNetFramework = await ExecuteLocator(buildLocatorDirectory, "net48");
 
             _cachedSdks = resultNetCore.Concat(resultNetFramework).ToArray();
@@ -66,7 +66,7 @@ public class SdkFinder : ISdkFinder
     {
         var result = await Cli.Wrap("dotnet")
             .WithWorkingDirectory(buildLocatorDirectory)
-            .WithArguments($"run \"TomLonghurst.Nupendencies.NetSdkLocator.csproj\" --framework {framework}")
+            .WithArguments($"\"TomLonghurst.Nupendencies.NetSdkLocator.dll\" --framework {framework}")
             .WithEnvironmentVariables(new Dictionary<string, string?>
             {
                 ["MsBuildExtensionPath"] = null,

@@ -34,7 +34,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\TomLonghurst.Nupendencies.Abstractions\TomLonghurst.Nupendencies.Abstractions.csproj" />
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.csproj" />
     </ItemGroup>
 
 </Project>
