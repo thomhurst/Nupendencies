@@ -2,8 +2,8 @@
 
 public class GitHubOptions
 {
-    public string AuthenticationUsername { get; init; }
-    public string AuthenticationPatToken { get; init; }
-    public string Organization { get; init; }
-    public string Team { get; init; }
+    public required string AuthenticationUsername { get; init; }
+    public required string AuthenticationPatToken { get; init; }
+    public required string Organization { get; init; }
+    public required string Team { get; init; }
 }

@@ -18,12 +18,12 @@ public class Program
             .AddUserSecrets<Program>()
             .Build();
 
-        var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>();
+        var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>()!;
             
         var services = new ServiceCollection()
             .AddLogging(configure =>
             {
-                configure.AddConsole(console =>
+                configure.AddSimpleConsole(console =>
                 {
                     console.TimestampFormat = "[HH:mm:ss] ";
                 });

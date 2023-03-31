@@ -95,7 +95,7 @@ public class DependencyUpdater : IDependencyUpdater
         foreach (var updateablePackage in packagesNeedingUpdate)
         {
             updateablePackage.Packages.ForEach(p =>
-                p.CurrentVersion = updateablePackage.NuGetPackageInformation.Version.ToNormalizedString());
+                p.CurrentVersion = SemVersion.Parse(updateablePackage.NuGetPackageInformation.Version.ToNormalizedString(), SemVersionStyles.Any));
         }
 
         var buildResult = await _solutionBuilder.BuildProjects(packagesGrouped.SelectMany(x => x).GetProjectsToBuild());
@@ -174,7 +174,7 @@ public class DependencyUpdater : IDependencyUpdater
 
         var originalPackageVersion = packagesNeedingUpdating.First().OriginalVersion;
 
-        packagesNeedingUpdating.ForEach(p => p.CurrentVersion = latestVersion);
+        packagesNeedingUpdating.ForEach(p => p.CurrentVersion = SemVersion.Parse(latestVersion, SemVersionStyles.Any));
 
         var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
 
@@ -218,7 +218,7 @@ public class DependencyUpdater : IDependencyUpdater
             return false;
         }
 
-        return originalVersion < latestVersion;
+        return SemVersion.CompareSortOrder(originalVersion, latestVersion) < 0;
     }
 
     private static void UpdateInfo(string latestVersion, ICollection<PackageUpdateResult> packageUpdateResults,

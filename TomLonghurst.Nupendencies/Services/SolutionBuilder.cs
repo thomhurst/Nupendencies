@@ -163,7 +163,7 @@ public class SolutionBuilder : ISolutionBuilder
         }
         
         var result = await Cli.Wrap(Path.Combine(sdk.Directory, "MSBuild.exe"))
-                .WithWorkingDirectory(Path.GetDirectoryName(projectToBuild.ProjectPath))
+                .WithWorkingDirectory(Path.GetDirectoryName(projectToBuild.ProjectPath)!)
                 .WithArguments($"\"{Path.GetFileName(projectToBuild.ProjectPath)}\" /restore -t:{target} /p:Configuration=Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
                 .WithEnvironmentVariables(new Dictionary<string, string?>
                 {
