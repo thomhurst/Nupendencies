@@ -135,8 +135,7 @@ public class SolutionBuilder : ISolutionBuilder
 
         return new ProjectBuildResult
         {
-            Output = result.StandardOutput,
-            ErrorOutput = result.StandardError,
+            Output = result.StandardOutput + Environment.NewLine + result.StandardError,
             ExitCode = result.ExitCode
         };
     }
@@ -179,8 +178,7 @@ public class SolutionBuilder : ISolutionBuilder
 
         return new ProjectBuildResult
         {
-            Output = result.StandardOutput,
-            ErrorOutput = result.StandardError,
+            Output = result.StandardOutput + Environment.NewLine + result.StandardError,
             ExitCode = result.ExitCode
         };
     }

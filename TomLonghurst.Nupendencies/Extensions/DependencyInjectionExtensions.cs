@@ -28,7 +28,7 @@ public static class DependencyInjectionExtensions
         
         services.AddSingleton<NuGetClient>();
 
-        services.AddSingleton<IPreviousResultsService, PreviousResultsService>()
+        services
             .AddSingleton<IPackageVersionScanner, PackageVersionScanner>()
             .AddTransient<IRepositoryCloner, RepositoryCloner>()
             .AddTransient<IRepositoryProcessorService, RepositoryProcessorService>()
