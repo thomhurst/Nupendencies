@@ -1,5 +1,6 @@
 ﻿using NuGet.ProjectModel;
 using Semver;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 
 namespace TomLonghurst.Nupendencies.Contracts;
 

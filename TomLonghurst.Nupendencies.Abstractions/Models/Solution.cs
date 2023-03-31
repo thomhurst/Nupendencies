@@ -1,7 +1,7 @@
 ﻿using Microsoft.Build.Construction;
-using NuGet.Packaging;
+using TomLonghurst.Nupendencies.Abstractions.Extensions;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record Solution
 {

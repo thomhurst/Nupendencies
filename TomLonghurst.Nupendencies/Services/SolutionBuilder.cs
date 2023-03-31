@@ -2,6 +2,7 @@
 using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;

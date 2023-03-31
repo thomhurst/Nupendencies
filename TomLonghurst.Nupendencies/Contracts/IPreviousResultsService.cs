@@ -1,4 +1,6 @@
-﻿namespace TomLonghurst.Nupendencies.Contracts;
+﻿using TomLonghurst.Nupendencies.Abstractions.Models;
+
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IPreviousResultsService
 {

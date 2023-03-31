@@ -1,7 +1,7 @@
 ﻿using Microsoft.Build.Construction;
 using Semver;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record ProjectPackage
 {

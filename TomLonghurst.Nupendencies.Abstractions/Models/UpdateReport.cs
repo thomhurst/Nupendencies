@@ -1,6 +1,4 @@
-﻿using TomLonghurst.Nupendencies.Models;
-
-namespace TomLonghurst.Nupendencies.Services;
+﻿namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record UpdateReport(
     TargetFrameworkUpdateResult TargetFrameworkUpdateResult,

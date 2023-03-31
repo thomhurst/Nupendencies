@@ -1,9 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
-using Microsoft.VisualStudio.Services.Common;
-using TomLonghurst.Nupendencies.Extensions;
+using TomLonghurst.Nupendencies.Abstractions.Extensions;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record CodeRepository
 {

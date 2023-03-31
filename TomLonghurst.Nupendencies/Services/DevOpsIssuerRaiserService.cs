@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.WebApi;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;
+using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 

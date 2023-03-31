@@ -1,3 +1,3 @@
-﻿namespace TomLonghurst.Nupendencies.Services;
+﻿namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record DependencyRemovalResult(bool IsSuccessful, string PackageName, ProjectPackage Package);

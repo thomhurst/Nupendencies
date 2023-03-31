@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Build.Construction;
-using Microsoft.VisualStudio.Services.Common;
 using Semver;
+using TomLonghurst.Nupendencies.Abstractions.Extensions;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record Project
 {
@@ -188,11 +188,6 @@ public record Project
     private string GetFullPath(string path)
     {
         return Path.IsPathFullyQualified(path) ? path : Path.GetFullPath(path, Directory);
-    }
-
-    private T? GetValue<T>(Func<Project, T?> func)
-    {
-        return func(this) ?? DirectoryBuildProps.Select(func).FirstOrDefault(x => x != null);
     }
 
     private sealed class FilePathEqualityComparer : IEqualityComparer<Project>

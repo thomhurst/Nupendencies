@@ -1,12 +1,9 @@
-﻿using System.Collections.Immutable;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.Services.Common;
-using Semver;
+using TomLonghurst.Nupendencies.Abstractions.Extensions;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Contracts;
-using TomLonghurst.Nupendencies.Extensions;
-using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;
 

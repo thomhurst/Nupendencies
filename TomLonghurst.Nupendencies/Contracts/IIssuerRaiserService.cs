@@ -1,5 +1,5 @@
-using TomLonghurst.Nupendencies.Models;
-using TomLonghurst.Nupendencies.Services;
+using TomLonghurst.Nupendencies.Abstractions.Models;
+using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Contracts;
 

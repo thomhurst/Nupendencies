@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Services;
 
 namespace TomLonghurst.Nupendencies.Contracts;

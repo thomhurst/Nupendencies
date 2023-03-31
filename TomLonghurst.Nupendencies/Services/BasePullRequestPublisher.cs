@@ -1,10 +1,11 @@
 ﻿using System.Text;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
-using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;
+using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
 

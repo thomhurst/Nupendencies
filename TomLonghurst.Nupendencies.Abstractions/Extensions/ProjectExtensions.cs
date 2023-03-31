@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 
-namespace TomLonghurst.Nupendencies.Extensions;
+namespace TomLonghurst.Nupendencies.Abstractions.Extensions;
 
 public static class ProjectExtensions
 {
