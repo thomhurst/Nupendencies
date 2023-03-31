@@ -2,7 +2,7 @@
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 
-namespace TomLonghurst.Nupendencies.GitProviders.GitHub;
+namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
 public class GitHubIssuerService : IGitHubIssuerService
 {

@@ -1,6 +1,6 @@
 ﻿using TomLonghurst.Nupendencies.Abstractions.Models;
 
-namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps;
+namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Services;
 
 public interface IDevOpsPullRequestService
 {

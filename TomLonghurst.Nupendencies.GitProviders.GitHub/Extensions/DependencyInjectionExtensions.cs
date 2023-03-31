@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
+using TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
 namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Extensions;
 

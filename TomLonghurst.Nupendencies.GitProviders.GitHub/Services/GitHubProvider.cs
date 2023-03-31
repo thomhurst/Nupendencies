@@ -6,7 +6,7 @@ using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
 
-namespace TomLonghurst.Nupendencies.GitProviders.GitHub;
+namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
 public class GitHubProvider : IGitProvider
 {

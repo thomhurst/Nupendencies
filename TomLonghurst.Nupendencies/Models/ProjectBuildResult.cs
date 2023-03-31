@@ -1,4 +1,4 @@
-﻿namespace TomLonghurst.Nupendencies;
+﻿namespace TomLonghurst.Nupendencies.Models;
 
 public class ProjectBuildResult
 {

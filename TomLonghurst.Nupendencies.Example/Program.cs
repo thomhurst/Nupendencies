@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Extensions;
@@ -25,6 +26,11 @@ public class Program
         var gitHubOptions = configuration.GetSection("GitHub").Get<GitHubOptions>()!;
         var azureDevOpsOptions = configuration.GetSection("AzureDevOps").Get<AzureDevOpsOptions>()!;
 
+        nupendenciesOptions.RepositoriesToScan = new List<Func<GitRepository, bool>>()
+        {
+            repository => repository.Name == "asos-customer-ids5-poc"
+        };
+        
         var services = new ServiceCollection()
             .AddLogging(configure =>
             {

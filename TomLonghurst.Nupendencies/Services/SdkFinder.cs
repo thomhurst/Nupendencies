@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.NetSdkLocator.Models;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Services;
 
 public class SdkFinder : ISdkFinder
 {

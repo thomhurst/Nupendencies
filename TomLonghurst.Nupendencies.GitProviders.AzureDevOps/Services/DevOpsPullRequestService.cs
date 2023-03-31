@@ -4,7 +4,7 @@ using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
 using GitPullRequest = Microsoft.TeamFoundation.SourceControl.WebApi.GitPullRequest;
 
-namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps;
+namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Services;
 
 public class DevOpsPullRequestService : IDevOpsPullRequestService
 {

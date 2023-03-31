@@ -1,6 +1,6 @@
 ﻿using TomLonghurst.Nupendencies.Abstractions.Models;
 
-namespace TomLonghurst.Nupendencies.GitProviders.GitHub;
+namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
 public interface IGitHubIssuerService
 {

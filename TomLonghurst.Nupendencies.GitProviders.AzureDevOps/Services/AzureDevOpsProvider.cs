@@ -7,7 +7,7 @@ using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
 using GitPullRequest = TomLonghurst.Nupendencies.Abstractions.Models.GitPullRequest;
 using GitRepository = TomLonghurst.Nupendencies.Abstractions.Models.GitRepository;
 
-namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps;
+namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Services;
 
 public class AzureDevOpsProvider : IGitProvider
 {

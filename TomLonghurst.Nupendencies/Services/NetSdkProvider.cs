@@ -1,7 +1,7 @@
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.NetSdkLocator.Models;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Services;
 
 public class NetSdkProvider : INetSdkProvider
 {

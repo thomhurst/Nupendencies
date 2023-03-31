@@ -11,7 +11,7 @@ using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Services;
 
 public class PackageVersionScanner : IPackageVersionScanner
 {

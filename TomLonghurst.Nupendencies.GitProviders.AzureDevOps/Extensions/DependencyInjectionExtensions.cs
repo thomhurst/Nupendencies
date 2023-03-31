@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Services;
 
 namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Extensions;
 
