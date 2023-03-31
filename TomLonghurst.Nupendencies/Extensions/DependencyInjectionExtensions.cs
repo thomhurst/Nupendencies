@@ -16,6 +16,8 @@ public static class DependencyInjectionExtensions
             .MaxBy(x => x.Version);
         
         Build.Locator.MSBuildLocator.RegisterInstance(instance);
+
+        services.AddLogging();
         
         services.AddInitializers();
 
