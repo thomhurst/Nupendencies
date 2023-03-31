@@ -21,14 +21,14 @@ public class GithubIssuerRaiserService : BaseIssuerRaiserService
         _nupendenciesOptions = nupendenciesOptions;
     }
 
-    protected override async Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository)
+    protected override async Task<IList<Iss>> GetCurrentIssues(GitRepository gitRepository)
     {
         var query = new Query()
             .Organization(_nupendenciesOptions.GithubOptions.Organization)
             .Repository(gitRepository.Name)
             .Issues(null, null, null, null, null, null, null, null)
             .AllPages()
-            .Select(x => new Iss()
+            .Select(x => new Iss
             {
                 IssueNumber = x.Number,
                 Id = x.Id.Value,

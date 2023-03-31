@@ -34,7 +34,7 @@ public class AzureDevOpsInitializer : IInitializer
         _azureDevOpsOptions.ProjectGuid = foundProject.Id;
     }
 
-    private async Task<List<TeamProjectReference>> GetProjects()
+    private async Task<IList<TeamProjectReference>> GetProjects()
     {
         var projects = new List<TeamProjectReference>();
 

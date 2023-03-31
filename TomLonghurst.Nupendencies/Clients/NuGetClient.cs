@@ -13,7 +13,7 @@ public class NuGetClient
     private readonly NupendenciesOptions _nupendenciesOptions;
     private readonly ILogger<NuGetClient> _logger;
     
-    private List<PackageMetadataResource>? _nugetRepositories;
+    private IList<PackageMetadataResource>? _nugetRepositories;
 
     public NuGetClient(IMemoryCache memoryCache, NupendenciesOptions nupendenciesOptions, ILogger<NuGetClient> logger)
     {
@@ -22,7 +22,7 @@ public class NuGetClient
         _logger = logger;
     }
 
-    private async Task<List<PackageMetadataResource>> GetNuGetRepositories()
+    private async Task<IList<PackageMetadataResource>> GetNuGetRepositories()
     {
         var baseNuget = await GetNugetRepository("https://api.nuget.org/v3/index.json");
 

@@ -97,7 +97,7 @@ This was an automatic issue by the Nupendencies scanning tool written by Tom Lon
         return $"'{packageUpdateResult.PackageName}' {packageUpdateResult.Packages.First().OriginalVersion} > {packageUpdateResult.LatestVersionAttempted} - Dependency Update Failed";
     }
 
-    protected abstract Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository);
+    protected abstract Task<IList<Iss>> GetCurrentIssues(GitRepository gitRepository);
 
     protected abstract Task RaiseIssue(GitRepository gitRepository, PackageUpdateResult packageUpdateResult);
 

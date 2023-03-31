@@ -4,6 +4,6 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public record UpdateReport(
     TargetFrameworkUpdateResult TargetFrameworkUpdateResult,
-    List<DependencyRemovalResult> UnusedRemovedPackagesResults,
-    List<PackageUpdateResult> UpdatedPackagesResults
+    IList<DependencyRemovalResult> UnusedRemovedPackagesResults,
+    IList<PackageUpdateResult> UpdatedPackagesResults
 );

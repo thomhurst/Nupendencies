@@ -17,9 +17,9 @@ public class DevOpsIssuerRaiserService : BaseIssuerRaiserService
         _azureDevOpsOptions = azureDevOpsOptions;
     }
 
-    protected override Task<List<Iss>> GetCurrentIssues(GitRepository gitRepository)
+    protected override Task<IList<Iss>> GetCurrentIssues(GitRepository gitRepository)
     {
-        return Task.FromResult(new List<Iss>());
+        return Task.FromResult<IList<Iss>>(new List<Iss>());
     }
 
     protected override async Task RaiseIssue(GitRepository gitRepository, PackageUpdateResult packageUpdateResult)

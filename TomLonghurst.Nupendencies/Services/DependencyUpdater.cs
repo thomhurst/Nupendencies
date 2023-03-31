@@ -23,7 +23,7 @@ public class DependencyUpdater : IDependencyUpdater
         _solutionBuilder = solutionBuilder;
     }
 
-    public async Task<List<PackageUpdateResult>> TryUpdatePackages(CodeRepository codeRepository)
+    public async Task<IList<PackageUpdateResult>> TryUpdatePackages(CodeRepository codeRepository)
     {
         var results = new List<PackageUpdateResult>();
 
@@ -36,7 +36,8 @@ public class DependencyUpdater : IDependencyUpdater
 
         var nugetDependencyDetails = await _nuGetClient.GetPackages(packagesGrouped.Select(x => x.Key));
 
-        if (TryUpdateAllPackagesSimultaneously(nugetDependencyDetails, out var updateAllResults))
+        var updateAllResults = await TryUpdateAllPackagesSimultaneously(packagesGrouped, nugetDependencyDetails);
+        if (updateAllResults.All(x => x.UpdateBuiltSuccessfully))
         {
             _logger.LogInformation("Successfully updated all projects simultaneously");
             return updateAllResults;
@@ -87,6 +88,62 @@ public class DependencyUpdater : IDependencyUpdater
         return results;
     }
 
+    private async Task<IList<PackageUpdateResult>> TryUpdateAllPackagesSimultaneously(List<IGrouping<string, ProjectPackage>> packagesGrouped, NuGetPackageInformation[] nugetDependencyDetails)
+    {
+        var packagesNeedingUpdate = GetPackagesNeedingUpdate(packagesGrouped, nugetDependencyDetails).ToArray();
+        
+        foreach (var updateablePackage in packagesNeedingUpdate)
+        {
+            updateablePackage.Packages.ForEach(p =>
+                p.CurrentVersion = updateablePackage.NuGetPackageInformation.Version.ToNormalizedString());
+        }
+
+        var buildResult = await _solutionBuilder.BuildProjects(packagesGrouped.SelectMany(x => x).GetProjectsToBuild());
+
+        if (!buildResult.IsSuccessful)
+        {
+            foreach (var projectPackage in packagesGrouped.SelectMany(x => x))
+            {
+                projectPackage.RollbackVersion();
+            }
+
+            return Array.Empty<PackageUpdateResult>();
+        }
+
+        return packagesNeedingUpdate.Select(x => new PackageUpdateResult
+        {
+            PackageName = x.NuGetPackageInformation.PackageName,
+            Packages = x.Packages.ToHashSet(),
+            LatestVersionAttempted = x.NuGetPackageInformation.Version.ToNormalizedString(),
+            UpdateBuiltSuccessfully = true,
+            PackageDowngradeDetected = false
+        }).ToList();
+    }
+
+    private record UpdateablePackage(IEnumerable<ProjectPackage> Packages, NuGetPackageInformation NuGetPackageInformation);
+    private IEnumerable<UpdateablePackage> GetPackagesNeedingUpdate(List<IGrouping<string, ProjectPackage>> packagesGrouped, NuGetPackageInformation[] nugetDependencyDetails)
+    {
+        foreach (var projectPackages in packagesGrouped)
+        {
+            foreach (var nuGetPackageInformation in nugetDependencyDetails)
+            {
+                if (!string.Equals(projectPackages.Key, nuGetPackageInformation.PackageName,
+                        StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!VersionsNeedsUpdating(nuGetPackageInformation.Version.ToNormalizedString(),
+                        projectPackages.Min(x => x.OriginalVersion)!))
+                {
+                    continue;
+                }
+
+                yield return new UpdateablePackage(projectPackages, nuGetPackageInformation);
+            }
+        }
+    }
+    
     private async Task<bool> TryUpdatePackages(ImmutableHashSet<Project> projectsToBuild,
         List<ProjectPackage> packages, string latestVersion,
         List<PackageUpdateResult> packageUpdateResults)

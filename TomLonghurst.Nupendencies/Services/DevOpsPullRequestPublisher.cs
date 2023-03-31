@@ -30,7 +30,7 @@ public class DevOpsPullRequestPublisher : BasePullRequestPublisher
 
     protected override async Task CreatePullRequest(GitRepository gitRepository, string branchName, string body, int updateCount)
     {
-        await _vssConnection.GetClient<GitHttpClient>().CreatePullRequestAsync(new GitPullRequest()
+        await _vssConnection.GetClient<GitHttpClient>().CreatePullRequestAsync(new GitPullRequest
             {
                 Title = GenerateTitle(updateCount),
                 Description = body,
@@ -44,7 +44,7 @@ public class DevOpsPullRequestPublisher : BasePullRequestPublisher
 
     protected override async Task ClosePullRequest(GitRepository gitRepository, Pr pr)
     {
-        await _vssConnection.GetClient<GitHttpClient>().UpdatePullRequestAsync(new GitPullRequest()
+        await _vssConnection.GetClient<GitHttpClient>().UpdatePullRequestAsync(new GitPullRequest
             {
                 Status = PullRequestStatus.Abandoned
             },

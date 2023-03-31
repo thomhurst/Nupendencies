@@ -46,7 +46,7 @@ public class SolutionBuilder : ISolutionBuilder
         };
     }
 
-    private static bool CheckIsSuccessful(IReadOnlyCollection<ProjectBuildResult> results)
+    private static bool CheckIsSuccessful(IEnumerable<ProjectBuildResult> results)
     {
         if(results.Any(rw => rw.ExitCode != 0))
         {
@@ -86,7 +86,7 @@ public class SolutionBuilder : ISolutionBuilder
         return true;
     }*/
 
-    private async Task<List<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, string target = "build")
+    private async Task<IList<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, string target = "build")
     {
         var results = new List<ProjectBuildResult>();
 
