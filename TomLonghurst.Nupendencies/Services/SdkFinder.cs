@@ -35,10 +35,8 @@ public class SdkFinder : ISdkFinder
                 return _cachedSdks;
             }
             
-            var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            var repositoryRoot = Path.Combine(workingDirectory!, @"..\..\..\..\");
-
+            var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            
             var buildLocatorCsProj = Directory.GetFiles(workingDirectory, "TomLonghurst.Nupendencies.NetSdkLocator.dll",
                 SearchOption.AllDirectories).First();
 
