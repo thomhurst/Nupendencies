@@ -1,6 +1,7 @@
 ﻿using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
 
 namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps;
 
