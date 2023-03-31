@@ -6,13 +6,13 @@ public record TargetFramework
 {
     private string? _currentValue;
     public Project Project { get; }
-    public ProjectPropertyElement? TargetFrameworkTag { get; init; }
+    public ProjectPropertyElement? TargetFrameworkTag { get; }
 
-    public TargetFramework(Project project, ProjectPropertyElement? targetFrameworkTag)
+    public TargetFramework(Project project)
     {
         Project = project;
-        TargetFrameworkTag = targetFrameworkTag;
-        OriginalValue = targetFrameworkTag?.Value;
+        TargetFrameworkTag = project.ProjectRootElement.Properties.FirstOrDefault(x => x.Name == "TargetFramework");
+        OriginalValue = TargetFrameworkTag?.Value;
         CurrentValue = OriginalValue;
     }
 

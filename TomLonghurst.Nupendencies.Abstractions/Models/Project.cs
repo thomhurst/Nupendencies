@@ -46,8 +46,8 @@ public record Project
 
         ProjectRootElement = ProjectRootElement.Open(filePath)!;
 
-        TargetFrameworks = new TargetFrameworks(ProjectRootElement.Properties.FirstOrDefault(x => x.Name == "TargetFrameworks"));
-        TargetFramework = new TargetFramework(this, ProjectRootElement.Properties.FirstOrDefault(x => x.Name == "TargetFrameworks"));
+        TargetFrameworks = new TargetFrameworks(this);
+        TargetFramework = new TargetFramework(this);
         
         IsMultiTargeted = TargetFrameworks.IsMultiTargeted || DirectoryBuildProps.Any(x => x.IsMultiTargeted);
 

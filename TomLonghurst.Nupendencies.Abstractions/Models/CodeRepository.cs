@@ -12,9 +12,9 @@ public record CodeRepository
     public HashSet<Project> AllProjects { get; } = new();
 
 
-    public CodeRepository(string repositoryDirectoryPath)
+    public CodeRepository(string repositoryDirectoryPath, GitRepository gitRepository)
     {
-        Name = Path.GetDirectoryName(repositoryDirectoryPath)!;
+        Name = gitRepository.Name;
 
         RepositoryPath = repositoryDirectoryPath;
 

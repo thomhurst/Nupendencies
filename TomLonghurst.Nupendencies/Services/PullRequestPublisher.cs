@@ -14,15 +14,13 @@ public class PullRequestPublisher : IPullRequestPublisher
     private readonly ILogger<PullRequestPublisher> _logger;
 
     private const string NupendencyPrTitleSuffix = "## Nupendencies Automated PR ##";
-
-    private const string PrBodyPrefix = "This is an automated pull request by the Nupendencies scanning tool";
-
+    
     public PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger<PullRequestPublisher> logger)
     {
         _nupendenciesOptions = nupendenciesOptions;
         _logger = logger;
     }
-    
+
     public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository,
         UpdateReport updateReport)
     {
@@ -31,16 +29,18 @@ public class PullRequestPublisher : IPullRequestPublisher
         var packageUpdateResults = updateReport.UpdatedPackagesResults;
         var deletionUpdateResults = updateReport.UnusedRemovedPackagesResults;
         
-        var successfulUpdatesCount = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully)
-            + deletionUpdateResults.Count(d => d.IsSuccessful);
+        var successfulPackageUpdates = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully);
+        var successfulUnusedPackageRemovals = deletionUpdateResults.Count(r => r.IsSuccessful);
         
-        if (successfulUpdatesCount == 0)
+        if (successfulPackageUpdates == 0
+            && successfulUnusedPackageRemovals == 0
+            && !updateReport.TargetFrameworkUpdateResult.IsSuccessful)
         {
             return;
         }
 
         var existingOpenPrs = (await gitProvider.GetOpenPullRequests(gitRepository)).ToList();
-        var prBody = GenerateBody(packageUpdateResults);
+        var prBody = GenerateBody(packageUpdateResults, deletionUpdateResults, updateReport.TargetFrameworkUpdateResult);
 
         var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
         if (matchingPrWithSamePackageUpdates is { HasConflicts: false })
@@ -56,7 +56,7 @@ public class PullRequestPublisher : IPullRequestPublisher
             await gitProvider.ClosePullRequest(gitRepository, matchingPrWithSamePackageUpdates);
         }
 
-        var matchingPrWithOtherStaleUpdates = existingOpenPrs.FirstOrDefault(pr => pr.Body.StartsWith(PrBodyPrefix));
+        var matchingPrWithOtherStaleUpdates = existingOpenPrs.FirstOrDefault(pr => pr.Title.Contains(NupendencyPrTitleSuffix));
         if (matchingPrWithOtherStaleUpdates != null )
         {
             // There is an open PR that is stale. Close it and open a new one.
@@ -67,14 +67,14 @@ public class PullRequestPublisher : IPullRequestPublisher
         var branchName = $"feature/nupendencies-{DateTime.UtcNow.Ticks}";
         await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, gitRepository.Name)), branchName, gitRepository.Credentials);
 
-        _logger.LogInformation("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
+        _logger.LogInformation("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulPackageUpdates, gitRepository.Name);
         
         await gitProvider.CreatePullRequest(
             new CreatePullRequestModel
             {
                 UpdateReport = updateReport,
                 Repository = gitRepository,
-                Title = GenerateTitle(successfulUpdatesCount),
+                Title = GenerateTitle(successfulPackageUpdates, successfulUnusedPackageRemovals, updateReport.TargetFrameworkUpdateResult),
                 Body = prBody,
                 BaseBranch = gitRepository.MainBranch,
                 HeadBranch = GetBranchName(branchName)
@@ -86,23 +86,66 @@ public class PullRequestPublisher : IPullRequestPublisher
         return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(gitRepository.Provider.PullRequestBodyCharacterLimit));
     }
 
-    private string GenerateTitle(int updateCount)
+    private string GenerateTitle(int updateCount, int successfulUnusedPackageRemovals,
+        TargetFrameworkUpdateResult targetFrameworkUpdateResult)
     {
         var dateTime = DateTime.Now;
+
+        var stringBuilder = new StringBuilder();
+
+        if (targetFrameworkUpdateResult.IsSuccessful)
+        {
+            stringBuilder.Append($"{targetFrameworkUpdateResult.LatestVersion} | ");
+        }
+
+        if (updateCount > 0)
+        {
+            stringBuilder.Append($"{updateCount} ↑ | ");
+        }
         
-        return
-            $"{updateCount} Dependency Updates - {dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}";
+        if (successfulUnusedPackageRemovals > 0)
+        {
+            stringBuilder.Append($"{successfulUnusedPackageRemovals} ␡ | ");
+        }
+        
+        return stringBuilder.Append($"{dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}").ToString();
     }
 
-    private string GenerateBody(IEnumerable<PackageUpdateResult> packageUpdateResults)
+    private string GenerateBody(ICollection<PackageUpdateResult> packageUpdateResults,
+        ICollection<DependencyRemovalResult> dependencyRemovalResults,
+        TargetFrameworkUpdateResult targetFrameworkUpdateResult)
     {
-        return $@"{PrBodyPrefix}
+        var stringBuilder = new StringBuilder();
 
-The following packages have been updated:
+        if (targetFrameworkUpdateResult.IsSuccessful)
+        {
+            stringBuilder.AppendLine($".NET Upgraded > {targetFrameworkUpdateResult.LatestVersion}");
+            stringBuilder.AppendLine();
+        }
 
-{GetPackageList(packageUpdateResults)}
+        if (packageUpdateResults.Any())
+        {
+            stringBuilder.AppendLine($"{packageUpdateResults.Count} ↑");
+            foreach (var packageUpdateResult in packageUpdateResults.OrderBy(x => x.PackageName))
+            {
+                stringBuilder.AppendLine($" - {packageUpdateResult.PackageName} > {packageUpdateResult.Packages.First().OriginalVersion} > {packageUpdateResult.LatestVersionAttempted}");
+            }
+            stringBuilder.AppendLine();
+        }
 
-If the build does not succeed, please manually test the pull request and fix any issues.";
+        
+        
+        if (dependencyRemovalResults.Any())
+        {
+            stringBuilder.AppendLine($"{dependencyRemovalResults.Count} ␡ | ");
+            foreach (var dependencyRemovalResult in dependencyRemovalResults.OrderBy(x => x.PackageName))
+            {
+                stringBuilder.AppendLine($" - {dependencyRemovalResult.PackageName} > {dependencyRemovalResult.Package.Project.Name}");
+            }
+            stringBuilder.AppendLine();
+        }
+
+        return stringBuilder.ToString();
     }
 
     private string GetPackageList(IEnumerable<PackageUpdateResult> packageUpdateResults)

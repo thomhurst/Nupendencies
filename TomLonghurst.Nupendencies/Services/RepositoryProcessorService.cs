@@ -34,7 +34,7 @@ public class RepositoryProcessorService : IRepositoryProcessorService
         {
             var clonedLocation = _repositoryCloner.CloneRepository(gitRepository);
 
-            var repository = new CodeRepository(clonedLocation);
+            var repository = new CodeRepository(clonedLocation, gitRepository);
             
             var updateReport = await _codeRepositoryUpdater.UpdateRepository(repository);
             

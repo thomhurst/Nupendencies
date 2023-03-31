@@ -27,7 +27,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
             .Where(x => x.IsNetCore)
             .ToList();
 
-        if (!netCoreProjects.Any())
+        if (!netCoreProjects.Any(NeedsUpdating))
         {
             return new TargetFrameworkUpdateResult(false, string.Empty, string.Empty);
         }
@@ -56,5 +56,12 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
 
         _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", targetFrameworkOriginalValue, LatestNetValue);
         return new TargetFrameworkUpdateResult(true, targetFrameworkOriginalValue!, LatestNetValue);
+    }
+
+    private static bool NeedsUpdating(Project x)
+    {
+        var currentVersion = double.Parse(x.TargetFramework.CurrentValue!.Replace("net", string.Empty));
+        var latestVersion = double.Parse(LatestNetValue.Replace("net", string.Empty)); 
+        return currentVersion < latestVersion;
     }
 }

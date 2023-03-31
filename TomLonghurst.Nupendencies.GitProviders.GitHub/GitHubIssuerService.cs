@@ -1,5 +1,4 @@
 ﻿using Octokit.GraphQL;
-using TomLonghurst.Nupendencies.Abstractions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 

@@ -7,7 +7,6 @@ using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
-using TomLonghurst.Nupendencies.GitProviders.GitHub.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
 using TomLonghurst.Nupendencies.Options;
 
@@ -37,7 +36,7 @@ public class Program
             })
             .AddSingleton(configuration)
             .AddNupendencies(nupendenciesOptions)
-            .AddGitHubProvider(gitHubOptions)
+            //.AddGitHubProvider(gitHubOptions)
             .AddAzureDevOpsProvider(azureDevOpsOptions)
             .PostConfigure<LoggerFilterOptions>(options =>
             {

@@ -2,7 +2,6 @@
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Abstractions.Contracts;
-using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
