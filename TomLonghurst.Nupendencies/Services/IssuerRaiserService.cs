@@ -44,11 +44,12 @@ public class IssuerRaiserService : IIssuerRaiserService
 
             if (matchingIssueForOtherVersion != null)
             {
+                _logger.LogInformation("Closing Redundant Older Issue for Package {PackageName} on Repo {RepoName}", packageUpdateResult.PackageName, gitRepository.Name);
                 // Issue already open for this another version. We should close it and raise a new one with the new version.
                 await gitProvider.CloseIssue(gitRepository, matchingIssueForOtherVersion);
             }
 
-            _logger.LogDebug("Raising Issue for Package {PackageName} on Repo {RepoName}", packageUpdateResult.PackageName, gitRepository.Name);
+            _logger.LogInformation("Raising Issue for Package {PackageName} on Repo {RepoName}", packageUpdateResult.PackageName, gitRepository.Name);
             await gitProvider.CreateIssue(gitRepository, GenerateTitle(packageUpdateResult), GenerateBody(packageUpdateResult));
         }
         
