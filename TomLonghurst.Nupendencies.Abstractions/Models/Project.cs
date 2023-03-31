@@ -241,7 +241,7 @@ public record TargetFramework
     public string? CurrentValue
     {
         get => _currentValue;
-        init
+        set
         {
             if (OriginalValue != null)
             {

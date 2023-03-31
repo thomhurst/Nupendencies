@@ -26,7 +26,7 @@ public record ProjectPackage
     public SemVersion CurrentVersion
     {
         get => _currentVersion ?? OriginalVersion;
-        init
+        set
         {
             XmlVersionTag.Value = value.ToString();
             Project.Save();
