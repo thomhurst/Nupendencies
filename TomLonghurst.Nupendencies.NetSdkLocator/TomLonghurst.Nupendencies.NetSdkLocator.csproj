@@ -18,16 +18,4 @@
       <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="TomLonghurst.Nupendencies.NetSdkLocator.runtimeconfig.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
-    <Target Name="FilterCopyLocalItems" AfterTargets="ResolveLockFileCopyLocalProjectDeps">
-        <ItemGroup>
-            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' != 'dotnet-swagger'" />
-        </ItemGroup>
-    </Target>
-
 </Project>
