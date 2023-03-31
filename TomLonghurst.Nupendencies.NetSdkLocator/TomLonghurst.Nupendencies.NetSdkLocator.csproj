@@ -6,6 +6,11 @@
         <LangVersion>10</LangVersion>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
+    
+    <PropertyGroup>
+        <NuspecFile>TomLonghurst.Nupendencies.NetSdkLocator.nuspec</NuspecFile>
+        <NuspecProperties>version=$(Version)</NuspecProperties>
+    </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />

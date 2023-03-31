@@ -1,0 +1,17 @@
+<package>
+    <metadata>
+        <id>TomLonghurst.Nupendencies.NetSdkLocator</id>
+        <version>$version$</version>
+        <authors>Tom Longhurst</authors>
+        <description>MSBuild.exe and dotnet.exe locators</description>
+    </metadata>
+    <files>
+<!--        Net Core-->
+        <file src="TomLonghurst.Nupendencies.NetSdkLocator.targets" target="build" />
+        <file src="bin\Release\net7.0\TomLonghurst.Nupendencies.NetSdkLocator.deps.json" target="content/NetSdkLocator" />
+        <file src="bin\Release\net7.0\TomLonghurst.Nupendencies.NetSdkLocator.runtimeconfig.json" target="content/NetSdkLocator" />
+
+        <!--        Net Framework-->
+        <file src="bin\Release\net48\TomLonghurst.Nupendencies.NetSdkLocator.exe" target="content/NetSdkLocator" />
+    </files>
+</package>

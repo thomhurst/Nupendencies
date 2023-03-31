@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.N
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.NetSdkLocator.Models", "TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj", "{23C79B91-FE02-4D20-B86E-F874BD0F9DA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.Builder.MSBuild", "TomLonghurst.Nupendencies.Builder.MSBuild\TomLonghurst.Nupendencies.Builder.MSBuild.csproj", "{3010B110-A1FB-47F2-A26A-75FBD49A1895}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.Example", "TomLonghurst.Nupendencies.Example\TomLonghurst.Nupendencies.Example.csproj", "{87228443-16EF-45B5-9460-668529A06089}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.Abstractions", "TomLonghurst.Nupendencies.Abstractions\TomLonghurst.Nupendencies.Abstractions.csproj", "{535F575A-9348-43E5-AD02-7A2E30D94849}"
@@ -34,10 +32,6 @@ Global
 		{23C79B91-FE02-4D20-B86E-F874BD0F9DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23C79B91-FE02-4D20-B86E-F874BD0F9DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23C79B91-FE02-4D20-B86E-F874BD0F9DA7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3010B110-A1FB-47F2-A26A-75FBD49A1895}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3010B110-A1FB-47F2-A26A-75FBD49A1895}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3010B110-A1FB-47F2-A26A-75FBD49A1895}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3010B110-A1FB-47F2-A26A-75FBD49A1895}.Release|Any CPU.Build.0 = Release|Any CPU
 		{87228443-16EF-45B5-9460-668529A06089}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{87228443-16EF-45B5-9460-668529A06089}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87228443-16EF-45B5-9460-668529A06089}.Release|Any CPU.ActiveCfg = Release|Any CPU

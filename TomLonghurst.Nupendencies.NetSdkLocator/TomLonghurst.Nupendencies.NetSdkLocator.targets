@@ -1,0 +1,8 @@
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="AfterBuild">
+        <Copy SourceFiles="$(ProjectDir)NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.deps.json" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
+        <Copy SourceFiles="$(ProjectDir)NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.runtimeconfig.json" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
+        <Copy SourceFiles="$(ProjectDir)NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.exe" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
+
+    </Target>
+</Project>
