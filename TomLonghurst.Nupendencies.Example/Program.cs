@@ -5,6 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Extensions;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
+using TomLonghurst.Nupendencies.GitProviders.GitHub.Extensions;
+using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
 using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Example;
@@ -19,7 +23,9 @@ public class Program
             .Build();
 
         var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>()!;
-            
+        var gitHubOptions = configuration.GetSection("GitHub").Get<GitHubOptions>()!;
+        var azureDevOpsOptions = configuration.GetSection("AzureDevOps").Get<AzureDevOpsOptions>()!;
+
         var services = new ServiceCollection()
             .AddLogging(configure =>
             {
@@ -31,6 +37,8 @@ public class Program
             })
             .AddSingleton(configuration)
             .AddNupendencies(nupendenciesOptions)
+            .AddGitHubProvider(gitHubOptions)
+            .AddAzureDevOpsProvider(azureDevOpsOptions)
             .PostConfigure<LoggerFilterOptions>(options =>
             {
                 options.MinLevel = LogLevel.Debug;

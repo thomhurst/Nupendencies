@@ -13,6 +13,7 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddGitHubProvider(this IServiceCollection services,
         GitHubOptions options)
     {
+        services.AddSingleton(options);
         services.AddHttpClient<GitHubHttpClient>(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("pull-request-scanner", Assembly.GetAssembly(typeof(GitHubProvider))?.GetName().Version?.ToString()));
