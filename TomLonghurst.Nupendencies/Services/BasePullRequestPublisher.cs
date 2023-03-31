@@ -46,13 +46,13 @@ public class PullRequestPublisher : IPullRequestPublisher
         if (matchingPrWithSamePackageUpdates is { HasConflicts: false })
         {
             // There is an open PR identical to this one. Do nothing.
-            _logger.LogDebug("PR with the same dependencies already exists on Repo {RepoName}", gitRepository.Name);
+            _logger.LogInformation("A Pull Request with the same dependencies already exists on Repo {RepoName}", gitRepository.Name);
             return;
         }
 
         if (matchingPrWithSamePackageUpdates != null)
         {
-            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it has conflicts", matchingPrWithSamePackageUpdates.Number, gitRepository.Name);
+            _logger.LogInformation("Closing Pull Request {Number} on Repo {RepoName} as it has conflicts", matchingPrWithSamePackageUpdates.Number, gitRepository.Name);
             await gitProvider.ClosePullRequest(gitRepository, matchingPrWithSamePackageUpdates);
         }
 
@@ -60,14 +60,14 @@ public class PullRequestPublisher : IPullRequestPublisher
         if (matchingPrWithOtherStaleUpdates != null )
         {
             // There is an open PR that is stale. Close it and open a new one.
-            _logger.LogDebug("Closing Pull Request {Number} on Repo {RepoName} as it is stale", matchingPrWithOtherStaleUpdates.Number, gitRepository.Name);
+            _logger.LogInformation("Closing Pull Request {Number} on Repo {RepoName} as it is stale", matchingPrWithOtherStaleUpdates.Number, gitRepository.Name);
             await gitProvider.ClosePullRequest(gitRepository, matchingPrWithOtherStaleUpdates);
         }
 
         var branchName = $"feature/nupendencies-{DateTime.UtcNow.Ticks}";
         await PushChangesToRemoteBranch(new Repository(Path.Combine(clonedLocation, gitRepository.Name)), branchName, gitRepository.Credentials);
 
-        _logger.LogDebug("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
+        _logger.LogInformation("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
         
         await gitProvider.CreatePullRequest(
             new CreatePullRequestModel()
