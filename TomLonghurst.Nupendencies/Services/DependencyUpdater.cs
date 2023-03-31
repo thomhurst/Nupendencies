@@ -37,7 +37,7 @@ public class DependencyUpdater : IDependencyUpdater
         var nugetDependencyDetails = await _nuGetClient.GetPackages(packagesGrouped.Select(x => x.Key));
 
         var updateAllResults = await TryUpdateAllPackagesSimultaneously(packagesGrouped, nugetDependencyDetails);
-        if (updateAllResults.All(x => x.UpdateBuiltSuccessfully))
+        if (updateAllResults.Any() && updateAllResults.All(x => x.UpdateBuiltSuccessfully))
         {
             _logger.LogInformation("Successfully updated all projects simultaneously");
             return updateAllResults;
