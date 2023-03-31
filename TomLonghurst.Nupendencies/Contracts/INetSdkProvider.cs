@@ -1,6 +1,6 @@
 ﻿using TomLonghurst.Nupendencies.NetSdkLocator.Models;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface INetSdkProvider
 {

@@ -3,45 +3,47 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TomLonghurst.Nupendencies;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
-using TomLonghurst.Nupendencies.Services;
+using TomLonghurst.Nupendencies.Options;
+
+namespace TomLonghurst.Nupendencies.Example;
 
 public class Program
 {
     public static async Task Main(string[] args)
-        {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddUserSecrets<Program>()
-                .Build();
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets<Program>()
+            .Build();
 
-            var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>();
+        var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>();
             
-            var services = new ServiceCollection()
-                .AddLogging(configure =>
-                {
-                    configure.AddConsole(console =>
-                    {
-                        console.TimestampFormat = "[HH:mm:ss] ";
-                    });
-                    configure.AddConfiguration(configuration.GetSection("Logging"));
-                })
-                .AddSingleton(configuration)
-                .AddNupendencies(nupendenciesOptions)
-                .PostConfigure<LoggerFilterOptions>(options =>
-                {
-                    options.MinLevel = LogLevel.Debug;
-                });
-
-            var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        var services = new ServiceCollection()
+            .AddLogging(configure =>
             {
-                ValidateScopes = true,
-                ValidateOnBuild = true
+                configure.AddConsole(console =>
+                {
+                    console.TimestampFormat = "[HH:mm:ss] ";
+                });
+                configure.AddConfiguration(configuration.GetSection("Logging"));
+            })
+            .AddSingleton(configuration)
+            .AddNupendencies(nupendenciesOptions)
+            .PostConfigure<LoggerFilterOptions>(options =>
+            {
+                options.MinLevel = LogLevel.Debug;
             });
 
-            var nupendencyUpdater = serviceProvider.GetRequiredService<INupendencyUpdater>();
+        var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateScopes = true,
+            ValidateOnBuild = true
+        });
 
-            await nupendencyUpdater.Start();
-        }
+        var nupendencyUpdater = serviceProvider.GetRequiredService<INupendencyUpdater>();
+
+        await nupendencyUpdater.Start();
+    }
 }

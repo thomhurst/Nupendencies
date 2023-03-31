@@ -1,6 +1,6 @@
 using TomLonghurst.Nupendencies.Models;
 
-namespace TomLonghurst.Nupendencies.Services;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IRepositoryProcessorService
 {

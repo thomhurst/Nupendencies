@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.Common;
 using Semver;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
 

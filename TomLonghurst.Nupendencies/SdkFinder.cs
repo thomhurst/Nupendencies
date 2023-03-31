@@ -3,6 +3,7 @@ using System.Text.Json;
 using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.NetSdkLocator.Models;
 
 namespace TomLonghurst.Nupendencies;

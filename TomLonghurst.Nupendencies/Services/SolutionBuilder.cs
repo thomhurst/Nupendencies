@@ -2,7 +2,9 @@
 using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TomLonghurst.Nupendencies.Services;

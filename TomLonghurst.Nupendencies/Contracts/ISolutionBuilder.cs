@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using TomLonghurst.Nupendencies.Services;
 
-namespace TomLonghurst.Nupendencies.Services;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface ISolutionBuilder
 {

@@ -1,24 +1,26 @@
 ﻿using System.Text;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public abstract class BasePullRequestPublisher : IPullRequestPublisher
 {
-    protected readonly NupendenciesOptions _nupendenciesOptions;
+    protected readonly NupendenciesOptions NupendenciesOptions;
     private readonly IGitCredentialsProvider _gitCredentialsProvider;
     private readonly ILogger _logger;
 
-    private const string NupendencyPRTitleSuffix = "## Nupendencies Automated PR ##";
+    private const string NupendencyPrTitleSuffix = "## Nupendencies Automated PR ##";
 
     private const string PrBodyPrefix = "This is an automated pull request by the Nupendencies scanning tool";
 
-    public BasePullRequestPublisher(NupendenciesOptions nupendenciesOptions, IGitCredentialsProvider gitCredentialsProvider, ILogger logger)
+    protected BasePullRequestPublisher(NupendenciesOptions nupendenciesOptions, IGitCredentialsProvider gitCredentialsProvider, ILogger logger)
     {
-        _nupendenciesOptions = nupendenciesOptions;
+        NupendenciesOptions = nupendenciesOptions;
         _gitCredentialsProvider = gitCredentialsProvider;
         _logger = logger;
     }
@@ -42,7 +44,7 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
             return;
         }
 
-        var existingOpenPrs = await GetOpenPullRequests(gitRepository);
+        var existingOpenPrs = (await GetOpenPullRequests(gitRepository)).ToList();
         var prBody = GenerateBody(packageUpdateResults);
 
         var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
@@ -91,10 +93,10 @@ public abstract class BasePullRequestPublisher : IPullRequestPublisher
         var dateTime = DateTime.Now;
         
         return
-            $"{updateCount} Dependency Updates - {dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPRTitleSuffix}";
+            $"{updateCount} Dependency Updates - {dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}";
     }
 
-    protected string GenerateBody(IReadOnlyList<PackageUpdateResult> packageUpdateResults)
+    protected string GenerateBody(IEnumerable<PackageUpdateResult> packageUpdateResults)
     {
         return $@"{PrBodyPrefix}
 
@@ -105,7 +107,7 @@ The following packages have been updated:
 If the build does not succeed, please manually test the pull request and fix any issues.";
     }
 
-    private string GetPackageList(IReadOnlyList<PackageUpdateResult> packageUpdateResults)
+    private string GetPackageList(IEnumerable<PackageUpdateResult> packageUpdateResults)
     {
         var sb = new StringBuilder();
         
@@ -117,7 +119,7 @@ If the build does not succeed, please manually test the pull request and fix any
         return sb.ToString();
     }
 
-    private async Task PushChangesToRemoteBranch(IRepository repo, string branchName, RepositoryType repoRepositoryType)
+    private Task PushChangesToRemoteBranch(IRepository repo, string branchName, RepositoryType repoRepositoryType)
     {
         _logger.LogDebug("Starting Push to Branch {BranchName}", branchName);
 
@@ -126,7 +128,7 @@ If the build does not succeed, please manually test the pull request and fix any
         
         var remote = repo.Network.Remotes["origin"];
 
-        var updatedBranch = repo.Branches.Update(branch,
+        repo.Branches.Update(branch,
             b => b.Remote = remote.Name,
             b => b.UpstreamBranch = branch.CanonicalName);
         
@@ -141,16 +143,18 @@ If the build does not succeed, please manually test the pull request and fix any
             
             repo.Network.Push(branch, new PushOptions
             {
-                CredentialsProvider = (url, fromUrl, types) => _gitCredentialsProvider.GetCredentials(repoRepositoryType, types)
+                CredentialsProvider = (_, _, types) => _gitCredentialsProvider.GetCredentials(repoRepositoryType, types)
             });
         }
 
         _logger.LogDebug("Finishing Push to Branch {BranchName}", branchName);
+        
+        return Task.CompletedTask;
     }
 
     private Signature GetSignature()
     {
-        return new Signature(_nupendenciesOptions.CommitterName, _nupendenciesOptions.CommitterEmail, DateTimeOffset.UtcNow);
+        return new Signature(NupendenciesOptions.CommitterName, NupendenciesOptions.CommitterEmail, DateTimeOffset.UtcNow);
     }
 
     protected abstract Task<IEnumerable<Pr>> GetOpenPullRequests(GitRepository gitRepository);

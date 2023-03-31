@@ -1,6 +1,7 @@
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Services;
 
-namespace TomLonghurst.Nupendencies.Services;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IGithubGetService
 {

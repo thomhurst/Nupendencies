@@ -1,5 +1,6 @@
 ﻿using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -27,7 +28,7 @@ public class RepositoryCloner : IRepositoryCloner
 
         LibGit2Sharp.Repository.Clone(gitRepository.GitUrl, Path.Combine(tempDirectory, gitRepository.Name), new CloneOptions
         {
-            CredentialsProvider = (url, fromUrl, types) => _gitCredentialsProvider.GetCredentials(gitRepository.RepositoryType, types)
+            CredentialsProvider = (_, _, types) => _gitCredentialsProvider.GetCredentials(gitRepository.RepositoryType, types)
         });
 
         _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", gitRepository.Name, tempDirectory);

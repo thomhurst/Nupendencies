@@ -1,4 +1,6 @@
 ﻿using LibGit2Sharp;
+using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies;
 

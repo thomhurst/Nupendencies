@@ -1,7 +1,9 @@
 ﻿using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 

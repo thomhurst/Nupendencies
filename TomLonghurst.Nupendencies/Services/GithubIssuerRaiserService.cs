@@ -2,6 +2,7 @@
 using Octokit.GraphQL;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 

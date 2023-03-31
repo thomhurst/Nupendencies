@@ -1,3 +1,5 @@
+using TomLonghurst.Nupendencies.Contracts;
+
 namespace TomLonghurst.Nupendencies.Services;
 
 public class DirectoryService : IDirectoryService

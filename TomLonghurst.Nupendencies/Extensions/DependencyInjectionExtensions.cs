@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 using TomLonghurst.Nupendencies.Services;
 using Build = Microsoft.Build;
 
@@ -46,7 +48,7 @@ public static class DependencyInjectionExtensions
             client.BaseAddress = new Uri("https://api.github.com/");
         });
 
-        services.AddSingleton(sp =>
+        services.AddSingleton(_ =>
         {
             var azureDevOpsOptions = nupendenciesOptions.AzureDevOpsOptions;
 

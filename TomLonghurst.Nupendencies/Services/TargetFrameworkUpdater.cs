@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 
 namespace TomLonghurst.Nupendencies.Services;

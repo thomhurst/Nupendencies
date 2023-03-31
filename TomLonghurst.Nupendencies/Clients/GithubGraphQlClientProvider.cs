@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Octokit.GraphQL;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Clients;
 

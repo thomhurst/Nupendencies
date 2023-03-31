@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 

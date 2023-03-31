@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
+using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 using GitRepository = TomLonghurst.Nupendencies.Models.GitRepository;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -36,7 +38,7 @@ public class DevOpsPullRequestPublisher : BasePullRequestPublisher
                 Description = body,
                 TargetRefName = gitRepository.MainBranch,
                 SourceRefName = $"refs/heads/{branchName}",
-                WorkItemRefs = _nupendenciesOptions.AzureDevOpsOptions.WorkItemIds?.Select(workItemId => new ResourceRef { Id = workItemId }).ToArray()
+                WorkItemRefs = NupendenciesOptions.AzureDevOpsOptions.WorkItemIds?.Select(workItemId => new ResourceRef { Id = workItemId }).ToArray()
             },
             project: _azureDevOpsOptions.ProjectGuid,
             repositoryId: gitRepository.Id);

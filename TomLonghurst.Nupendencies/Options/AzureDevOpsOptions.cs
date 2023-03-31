@@ -1,4 +1,4 @@
-﻿namespace TomLonghurst.Nupendencies;
+﻿namespace TomLonghurst.Nupendencies.Options;
 
 public class AzureDevOpsOptions
 {

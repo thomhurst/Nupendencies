@@ -1,4 +1,6 @@
-﻿namespace TomLonghurst.Nupendencies.Services;
+﻿using TomLonghurst.Nupendencies.Services;
+
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface ITargetFrameworkUpdater
 {

@@ -10,7 +10,7 @@ public static class EnumerableExtensions
         return sortKeys.Join(itemsToSort,
             key => key,
             matchFunc,
-            (key, iitem) => iitem);
+            (_, iitem) => iitem);
     }
     
     public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> items, Func<T, TKey> property)

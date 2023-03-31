@@ -5,8 +5,10 @@ using NuGet.ProjectModel;
 using Semver;
 using TomLonghurst.EnumerableAsyncProcessor.Extensions;
 using TomLonghurst.Nupendencies.Clients;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies;
 

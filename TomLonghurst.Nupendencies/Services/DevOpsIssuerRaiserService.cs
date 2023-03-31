@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
@@ -19,12 +20,13 @@ public class DevOpsIssuerRaiserService : BaseIssuerRaiserService
 
     protected override Task<IList<Iss>> GetCurrentIssues(GitRepository gitRepository)
     {
+        // Dev Ops doesn't really have an issues section. Raise a user story?
         return Task.FromResult<IList<Iss>>(new List<Iss>());
     }
 
     protected override async Task RaiseIssue(GitRepository gitRepository, PackageUpdateResult packageUpdateResult)
     {
-        // TODO
+        // TODO Dev Ops doesn't really have an issues section. Raise a user story?
     }
 
     protected override async Task CloseIssue(GitRepository gitRepository, Iss issue)

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
@@ -9,6 +11,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
     private readonly IPackageVersionScanner _packageVersionScanner;
     private readonly ILogger<UnusedDependencyRemover> _logger;
     private readonly ISolutionBuilder _solutionBuilder;
+    private readonly NupendenciesOptions _nupendenciesOptions;
 
     private readonly Func<ProjectPackage, bool>[] _packagesToNotRemoveRules = {
         s => s.Name.Contains("Microsoft.NET.Test", StringComparison.OrdinalIgnoreCase),
@@ -31,16 +34,26 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
         s => s.Name.StartsWith("Microsoft.Extensions", StringComparison.OrdinalIgnoreCase),
     };
 
-    public UnusedDependencyRemover(IPreviousResultsService previousResultsService, IPackageVersionScanner packageVersionScanner, ILogger<UnusedDependencyRemover> logger, ISolutionBuilder solutionBuilder)
+    public UnusedDependencyRemover(IPreviousResultsService previousResultsService, 
+        IPackageVersionScanner packageVersionScanner, 
+        ILogger<UnusedDependencyRemover> logger, 
+        ISolutionBuilder solutionBuilder,
+        NupendenciesOptions nupendenciesOptions)
     {
         _previousResultsService = previousResultsService;
         _packageVersionScanner = packageVersionScanner;
         _logger = logger;
         _solutionBuilder = solutionBuilder;
+        _nupendenciesOptions = nupendenciesOptions;
     }
 
     public async IAsyncEnumerable<DependencyRemovalResult> TryDeleteUnusedPackages(CodeRepository repository)
     {
+        if (!_nupendenciesOptions.TryRemoveUnusedPackages)
+        {
+            yield break;
+        }
+        
         var allProjects = repository.AllProjects;
 
         foreach (var package in allProjects

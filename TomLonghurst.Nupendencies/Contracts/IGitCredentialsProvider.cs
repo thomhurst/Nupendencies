@@ -1,6 +1,6 @@
 ﻿using LibGit2Sharp;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IGitCredentialsProvider
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 

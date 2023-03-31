@@ -1,4 +1,4 @@
-﻿namespace TomLonghurst.Nupendencies;
+﻿namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IPreviousResultsService
 {

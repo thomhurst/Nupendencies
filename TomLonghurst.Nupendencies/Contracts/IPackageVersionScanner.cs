@@ -1,7 +1,7 @@
 ﻿using NuGet.ProjectModel;
 using Semver;
 
-namespace TomLonghurst.Nupendencies;
+namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface IPackageVersionScanner
 {

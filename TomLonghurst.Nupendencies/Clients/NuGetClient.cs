@@ -4,6 +4,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Clients;
 
@@ -87,7 +88,7 @@ public class NuGetClient
             try
             {
                 var cacheForThisNugetRepo =
-                    _memoryCache.GetOrCreate(packageMetadataResource, entry => new SourceCacheContext());
+                    _memoryCache.GetOrCreate(packageMetadataResource, _ => new SourceCacheContext());
                 
                 var packageMetadatas = (await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: false, includeUnlisted: false,
                     cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None)).ToList();
