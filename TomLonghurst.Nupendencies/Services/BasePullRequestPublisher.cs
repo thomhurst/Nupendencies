@@ -17,7 +17,7 @@ public class PullRequestPublisher : IPullRequestPublisher
 
     private const string PrBodyPrefix = "This is an automated pull request by the Nupendencies scanning tool";
 
-    protected PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger logger)
+    public PullRequestPublisher(NupendenciesOptions nupendenciesOptions, ILogger logger)
     {
         _nupendenciesOptions = nupendenciesOptions;
         _logger = logger;
@@ -86,7 +86,7 @@ public class PullRequestPublisher : IPullRequestPublisher
         return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(gitRepository.Provider.PullRequestBodyCharacterLimit));
     }
 
-    protected string GenerateTitle(int updateCount)
+    private string GenerateTitle(int updateCount)
     {
         var dateTime = DateTime.Now;
         
@@ -94,7 +94,7 @@ public class PullRequestPublisher : IPullRequestPublisher
             $"{updateCount} Dependency Updates - {dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}";
     }
 
-    protected string GenerateBody(IEnumerable<PackageUpdateResult> packageUpdateResults)
+    private string GenerateBody(IEnumerable<PackageUpdateResult> packageUpdateResults)
     {
         return $@"{PrBodyPrefix}
 
