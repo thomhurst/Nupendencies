@@ -2,11 +2,11 @@
 
 public record GitIssue
 {
-    public required int IssueNumber { get; set; }
-    public required string Id { get; set; }
-    public required string Title { get; set; }
-    public required string Author { get; set; }
-    public required DateTimeOffset Created { get; set; }
-    public required DateTimeOffset LastUpdated { get; set; }
-    public required bool IsClosed { get; set; }
+    public required int IssueNumber { get; init; }
+    public required string Id { get; init; }
+    public required string Title { get; init; }
+    public required string Author { get; init; }
+    public required DateTimeOffset Created { get; init; }
+    public required DateTimeOffset LastUpdated { get; init; }
+    public required bool IsClosed { get; init; }
 }

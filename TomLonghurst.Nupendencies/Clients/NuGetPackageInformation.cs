@@ -5,7 +5,7 @@ namespace TomLonghurst.Nupendencies.Clients;
 
 public class NuGetPackageInformation
 {
-    public string PackageName { get; set; }
-    public NuGetVersion Version { get; set; }
-    public List<PackageDependency> Dependencies { get; set; }
+    public string PackageName { get; init; }
+    public NuGetVersion Version { get; init; }
+    public List<PackageDependency> Dependencies { get; init; }
 }

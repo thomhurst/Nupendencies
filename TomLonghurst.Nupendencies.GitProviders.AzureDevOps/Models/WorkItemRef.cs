@@ -6,5 +6,5 @@ namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Models;
 public class WorkItemRef
 {
     [JsonPropertyName("id"), JsonProperty("id")]
-    public string Id { get; set; }
+    public string Id { get; init; }
 }

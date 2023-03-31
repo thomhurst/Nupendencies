@@ -2,10 +2,10 @@
 
 public class AzureDevOpsOptions
 {
-    public string AuthenticationUsername { get; set; }
-    public string AuthenticationPatToken { get; set; }
-    public string Organization { get; set; }
-    public string ProjectName { get; set; }
-    internal Guid ProjectGuid { get; set; }
-    public string[]? WorkItemIds { get; set; }
+    public required string AuthenticationUsername { get; init; }
+    public required string AuthenticationPatToken { get; init; }
+    public required string Organization { get; init; }
+    public required string ProjectName { get; init; }
+    internal Guid ProjectGuid { get; init; }
+    public required string[]? WorkItemIds { get; init; }
 }

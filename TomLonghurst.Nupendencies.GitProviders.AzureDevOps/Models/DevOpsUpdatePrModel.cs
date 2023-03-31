@@ -6,5 +6,5 @@ namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Models;
 public class DevOpsUpdatePrModel
 {
     [JsonPropertyName("status"), JsonProperty("status")]
-    public string Status { get; set; }
+    public string Status { get; init; }
 }

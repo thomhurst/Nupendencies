@@ -59,9 +59,9 @@ public record Project
         Children = ParseChildren(ProjectRootElement);
     }
 
-    public TargetFramework TargetFramework { get; set; }
+    public TargetFramework TargetFramework { get; init; }
 
-    public TargetFrameworks TargetFrameworks { get; set; }
+    public TargetFrameworks TargetFrameworks { get; init; }
 
     private string? GetPropertyValue(string propertyName)
     {
@@ -226,7 +226,7 @@ public record TargetFramework
 {
     private string? _currentValue;
     public Project Project { get; }
-    public ProjectPropertyElement? TargetFrameworkTag { get; set; }
+    public ProjectPropertyElement? TargetFrameworkTag { get; init; }
 
     public TargetFramework(Project project, ProjectPropertyElement? targetFrameworkTag)
     {
@@ -241,7 +241,7 @@ public record TargetFramework
     public string? CurrentValue
     {
         get => _currentValue;
-        set
+        init
         {
             if (OriginalValue != null)
             {

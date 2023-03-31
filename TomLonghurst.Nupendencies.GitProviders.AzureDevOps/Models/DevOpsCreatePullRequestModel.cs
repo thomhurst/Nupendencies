@@ -6,17 +6,17 @@ namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Models;
 public class DevOpsCreatePullRequestModel
 {
     [JsonPropertyName("title"), JsonProperty("title")]
-    public string Title { get; set; }
+    public string Title { get; init; }
 
     [JsonPropertyName("description"), JsonProperty("description")]
-    public string Body { get; set; }
+    public string Body { get; init; }
     
     [JsonPropertyName("targetRefName"), JsonProperty("targetRefName")]
-    public string TargetBranch { get; set; }
+    public string TargetBranch { get; init; }
     
     [JsonPropertyName("sourceRefName"), JsonProperty("sourceRefName")]
-    public string SourceBranch { get; set; }
+    public string SourceBranch { get; init; }
     
     [JsonPropertyName("workItemRefs"), JsonProperty("workItemRefs")]
-    public WorkItemRef[] WorkItemRefs { get; set; }
+    public WorkItemRef[] WorkItemRefs { get; init; }
 }

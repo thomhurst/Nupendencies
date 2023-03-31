@@ -26,7 +26,7 @@ public record ProjectPackage
     public SemVersion CurrentVersion
     {
         get => _currentVersion ?? OriginalVersion;
-        set
+        init
         {
             XmlVersionTag.Value = value.ToString();
             Project.Save();
@@ -94,7 +94,7 @@ public record ProjectPackage
 
     private sealed class PackageReferenceTagEqualityComparer : IEqualityComparer<ProjectPackage>
     {
-        public bool Equals(ProjectPackage x, ProjectPackage y)
+        public bool Equals(ProjectPackage? x, ProjectPackage? y)
         {
             if (ReferenceEquals(x, y)) return true;
             if (ReferenceEquals(x, null)) return false;
