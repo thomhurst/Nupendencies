@@ -1,10 +1,10 @@
-﻿using TomLonghurst.Nupendencies.Models;
+﻿using TomLonghurst.Nupendencies.Abstractions.Models;
 
 namespace TomLonghurst.Nupendencies.Options;
 
 public class NupendenciesOptions
 {
-    public GithubOptions GithubOptions { get; set; } = new();
+    public GitHubOptions GitHubOptions { get; set; } = new();
     public AzureDevOpsOptions AzureDevOpsOptions { get; set; } = new();
     
     public bool TryRemoveUnusedPackages { get; set; }

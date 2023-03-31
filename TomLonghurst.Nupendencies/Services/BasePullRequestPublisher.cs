@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;

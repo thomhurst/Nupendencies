@@ -1,4 +1,4 @@
-﻿using TomLonghurst.Nupendencies.Models;
+﻿using TomLonghurst.Nupendencies.Abstractions.Models;
 
 namespace TomLonghurst.Nupendencies.Contracts;
 

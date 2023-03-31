@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.Abstractions", "TomLonghurst.Nupendencies.Abstractions\TomLonghurst.Nupendencies.Abstractions.csproj", "{535F575A-9348-43E5-AD02-7A2E30D94849}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.GitProviders.AzureDevOps", "TomLonghurst.Nupendencies.GitProviders.AzureDevOps\TomLonghurst.Nupendencies.GitProviders.AzureDevOps.csproj", "{1C5F145A-A814-4070-83FC-E286C4FEF71E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.GitProviders.GitHub", "TomLonghurst.Nupendencies.GitProviders.GitHub\TomLonghurst.Nupendencies.GitProviders.GitHub.csproj", "{84079868-897C-4F02-863D-40B63A49C9CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +46,13 @@ Global
 		{535F575A-9348-43E5-AD02-7A2E30D94849}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{535F575A-9348-43E5-AD02-7A2E30D94849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{535F575A-9348-43E5-AD02-7A2E30D94849}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C5F145A-A814-4070-83FC-E286C4FEF71E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C5F145A-A814-4070-83FC-E286C4FEF71E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C5F145A-A814-4070-83FC-E286C4FEF71E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C5F145A-A814-4070-83FC-E286C4FEF71E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84079868-897C-4F02-863D-40B63A49C9CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84079868-897C-4F02-863D-40B63A49C9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84079868-897C-4F02-863D-40B63A49C9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84079868-897C-4F02-863D-40B63A49C9CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

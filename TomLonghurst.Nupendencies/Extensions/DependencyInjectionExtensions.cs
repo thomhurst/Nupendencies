@@ -2,9 +2,8 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
+using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Options;
@@ -15,6 +14,12 @@ namespace TomLonghurst.Nupendencies.Extensions;
 
 public static class DependencyInjectionExtensions
 {
+    public static IServiceCollection AddGitProvider<TGitProvider>(this IServiceCollection services)
+        where TGitProvider : class, IGitProvider
+    {
+        return services.AddTransient<IGitProvider, TGitProvider>();
+    }
+    
     public static IServiceCollection AddNupendencies(this IServiceCollection services, NupendenciesOptions nupendenciesOptions)
     {
         var instance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
@@ -39,12 +44,12 @@ public static class DependencyInjectionExtensions
         //     configure.AddConsole();
         // });
 
-        services.AddHttpClient<GithubHttpClient>(client =>
+        services.AddHttpClient<GitHubHttpClient>(client =>
         {
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("pull-request-scanner", Assembly.GetAssembly(typeof(INupendencyUpdater)).GetName().Version.ToString()));
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                Convert.ToBase64String(Encoding.ASCII.GetBytes(nupendenciesOptions.GithubOptions.PatToken)));
+                Convert.ToBase64String(Encoding.ASCII.GetBytes(nupendenciesOptions.GitHubOptions.PatToken)));
             client.BaseAddress = new Uri("https://api.github.com/");
         });
 
@@ -62,7 +67,7 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<NuGetClient>();
             
-        services.AddSingleton<IGithubGraphQlClientProvider, GithubGraphQlClientProvider>()
+        services.AddSingleton<IGitHubGraphQlClientProvider, GitHubGraphQlClientProvider>()
             .AddSingleton<IPreviousResultsService, PreviousResultsService>()
             .AddSingleton<IPackageVersionScanner, PackageVersionScanner>()
             .AddTransient<IGitCredentialsProvider, GitCredentialsProvider>()
@@ -76,13 +81,13 @@ public static class DependencyInjectionExtensions
             .AddTransient<INupendencyUpdater, NupendencyUpdater>()
             .AddTransient<IDirectoryService, DirectoryService>()
             
-            .AddSingleton<IGithubGetService, GithubGetService>()
+            .AddSingleton<IGitHubGetService, GitHubGetService>()
             .AddSingleton<IDevOpsGetService, DevOpsGetService>()
             
-            .AddTransient<IIssuerRaiserService, GithubIssuerRaiserService>()
+            .AddTransient<IIssuerRaiserService, GitHubIssuerRaiserService>()
             .AddTransient<IIssuerRaiserService, DevOpsIssuerRaiserService>()
             
-            .AddTransient<IPullRequestPublisher, GithubPullRequestPublisher>()
+            .AddTransient<IPullRequestPublisher, GitHubPullRequestPublisher>()
             .AddTransient<IPullRequestPublisher, DevOpsPullRequestPublisher>();
         
         return services;

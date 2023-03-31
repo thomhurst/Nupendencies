@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization.Extensions;
+using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
-using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class NupendencyUpdater : INupendencyUpdater
 {
-    private readonly IGithubGetService _githubGetService;
+    private readonly IGitHubGetService _githubGetService;
     private readonly IDevOpsGetService _devOpsGetService;
     private readonly IRepositoryProcessorService _repositoryProcessorService;
     private readonly NupendenciesOptions _nupendenciesOptions;
@@ -16,7 +16,7 @@ public class NupendencyUpdater : INupendencyUpdater
     private readonly ILogger<NupendencyUpdater> _logger;
     private readonly IServiceProvider _serviceProvider;
 
-    public NupendencyUpdater(IGithubGetService githubGetService,
+    public NupendencyUpdater(IGitHubGetService githubGetService,
         IDevOpsGetService devOpsGetService,
         IRepositoryProcessorService repositoryProcessorService,
         NupendenciesOptions nupendenciesOptions,

@@ -1,5 +1,5 @@
 ﻿using LibGit2Sharp;
-using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies;
@@ -15,8 +15,8 @@ public class GitCredentialsProvider : IGitCredentialsProvider
     
     public Credentials GetCredentials(RepositoryType repositoryType, SupportedCredentialTypes supportedCredentialTypes)
     {
-        var pat = repositoryType == RepositoryType.Github
-            ? _nupendenciesOptions.GithubOptions.PatToken
+        var pat = repositoryType == RepositoryType.GitHub
+            ? _nupendenciesOptions.GitHubOptions.PatToken
             : _nupendenciesOptions.AzureDevOpsOptions.PatToken;
 
         string username = null;

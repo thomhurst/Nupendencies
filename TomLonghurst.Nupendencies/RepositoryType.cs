@@ -2,6 +2,6 @@
 
 public enum RepositoryType
 {
-    Github,
+    GitHub,
     AzureDevOps
 }

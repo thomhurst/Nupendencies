@@ -19,7 +19,6 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-      <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.218.0-preview" />
       <PackageReference Include="NuGet.Common" Version="6.5.0" />
       <PackageReference Include="NuGet.Configuration" Version="6.5.0" />
       <PackageReference Include="NuGet.Credentials" Version="6.5.0" />
@@ -27,12 +26,10 @@
       <PackageReference Include="NuGet.ProjectModel" Version="6.5.0" />
       <PackageReference Include="NuGet.Protocol" Version="6.5.0" />
       <PackageReference Include="NuGet.Versioning" Version="6.5.0" />
-      <PackageReference Include="Octokit.GraphQL" Version="0.2.0-beta" />
       <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
       <PackageReference Include="System.Linq.Async" Version="6.0.1" />
       <PackageReference Include="System.Text.Json" Version="7.0.2" />
       <PackageReference Include="TomLonghurst.EnumerableAsyncProcessor" Version="1.1.0" />
-      <PackageReference Include="TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization" Version="1.2.1" />
     </ItemGroup>
 
     <ItemGroup>
