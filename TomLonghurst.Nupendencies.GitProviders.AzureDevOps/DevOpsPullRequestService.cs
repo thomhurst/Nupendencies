@@ -29,7 +29,7 @@ public class DevOpsPullRequestService : IDevOpsPullRequestService
 
     public async Task CreatePullRequest(CreatePullRequestModel createPullRequestModel)
     {
-        await _vssConnection.GetClient<GitHttpClient>().CreatePullRequestAsync(new GitPullRequest()
+        await _vssConnection.GetClient<GitHttpClient>().CreatePullRequestAsync(new GitPullRequest
             {
                 Title = createPullRequestModel.Title,
                 Description = createPullRequestModel.Body,

@@ -70,7 +70,7 @@ public class PullRequestPublisher : IPullRequestPublisher
         _logger.LogInformation("Raising Pull Request with {SuccessfulUpdatesCount} updates on Repo {RepoName}", successfulUpdatesCount, gitRepository.Name);
         
         await gitProvider.CreatePullRequest(
-            new CreatePullRequestModel()
+            new CreatePullRequestModel
             {
                 UpdateReport = updateReport,
                 Repository = gitRepository,
@@ -126,7 +126,7 @@ If the build does not succeed, please manually test the pull request and fix any
         
         var remote = repo.Network.Remotes["origin"];
 
-        repo.Branches.Update(branch,
+        var result = repo.Branches.Update(branch,
             b => b.Remote = remote.Name,
             b => b.UpstreamBranch = branch.CanonicalName);
         
