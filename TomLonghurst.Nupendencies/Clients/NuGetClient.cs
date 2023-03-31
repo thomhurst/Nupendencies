@@ -64,7 +64,7 @@ public class NuGetClient
             .ToArray();
     }
 
-    public async Task<NuGetPackageInformation?> GetPackage(string packageName, string version = null)
+    public async Task<NuGetPackageInformation?> GetPackage(string packageName, string? version = null)
     {
         _nugetRepositories ??= await GetNuGetRepositories();
 
@@ -79,7 +79,7 @@ public class NuGetClient
             return null;
         }
 
-        var packageSearchMetadatas = new List<IPackageSearchMetadata?>();
+        var packageSearchMetadatas = new List<IPackageSearchMetadata>();
         
         _logger.LogDebug("Getting information for NuGet Package {PackageName}", packageName);
         
@@ -93,13 +93,13 @@ public class NuGetClient
                 var packageMetadatas = (await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: false, includeUnlisted: false,
                     cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None)).ToList();
 
-                if (packageMetadatas?.Any() != true)
+                if (!packageMetadatas.Any())
                 {
                     packageMetadatas = (await packageMetadataResource.GetMetadataAsync(packageName, includePrerelease: true, includeUnlisted: false,
                         cacheForThisNugetRepo, NullLogger.Instance, CancellationToken.None)).ToList();
                 }
             
-                if (packageMetadatas?.Any() != true)
+                if (!packageMetadatas.Any())
                 {
                     continue;
                 }
@@ -146,7 +146,7 @@ public class NuGetClient
         var packageInformation = new NuGetPackageInformation
         {
             PackageName = packageName,
-            Version = packageSearchMetadata!.Identity.Version,
+            Version = packageSearchMetadata.Identity.Version,
             Dependencies = packageSearchMetadata.DependencySets
                 .SelectMany(x => x.Packages)
                 .ToList()

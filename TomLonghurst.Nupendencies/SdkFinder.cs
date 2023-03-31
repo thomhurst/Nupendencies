@@ -11,7 +11,7 @@ namespace TomLonghurst.Nupendencies;
 public class SdkFinder : ISdkFinder
 {
     private readonly ILogger<SdkFinder> _logger;
-    private NetSdk[] _cachedSdks;
+    private NetSdk[]? _cachedSdks;
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     public SdkFinder(ILogger<SdkFinder> logger)
@@ -37,12 +37,12 @@ public class SdkFinder : ISdkFinder
             
             var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            var repositoryRoot = Path.Combine(workingDirectory, @"..\..\..\..\");
+            var repositoryRoot = Path.Combine(workingDirectory!, @"..\..\..\..\");
 
             var buildLocatorCsProj = Directory.GetFiles(repositoryRoot, "TomLonghurst.Nupendencies.NetSdkLocator.csproj",
                 SearchOption.AllDirectories).First();
 
-            var buildLocatorDirectory = Path.GetDirectoryName(buildLocatorCsProj);
+            var buildLocatorDirectory = Path.GetDirectoryName(buildLocatorCsProj)!;
 
             var resultNetCore = await ExecuteLocator(buildLocatorDirectory, "net6.0");
             var resultNetFramework = await ExecuteLocator(buildLocatorDirectory, "net48");
@@ -82,6 +82,6 @@ public class SdkFinder : ISdkFinder
             return Array.Empty<NetSdk>();
         }
 
-        return JsonSerializer.Deserialize<NetSdk[]>(result.StandardOutput);
+        return JsonSerializer.Deserialize<NetSdk[]>(result.StandardOutput) ?? Array.Empty<NetSdk>();
     }
 }

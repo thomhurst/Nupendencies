@@ -2,7 +2,7 @@
 
 public class ProjectBuildResult
 {
-    public int ExitCode { get; init; }
-    public string Output { get; init; }
-    public string ErrorOutput { get; init; }
+    public required int ExitCode { get; init; }
+    public required string Output { get; init; }
+    public required string ErrorOutput { get; init; }
 }

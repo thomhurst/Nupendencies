@@ -8,7 +8,6 @@ namespace TomLonghurst.Nupendencies.Services;
 
 public class UnusedDependencyRemover : IUnusedDependencyRemover
 {
-    private readonly IPreviousResultsService _previousResultsService;
     private readonly IPackageVersionScanner _packageVersionScanner;
     private readonly ILogger<UnusedDependencyRemover> _logger;
     private readonly ISolutionBuilder _solutionBuilder;
@@ -35,13 +34,11 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
         s => s.Name.StartsWith("Microsoft.Extensions", StringComparison.OrdinalIgnoreCase),
     };
 
-    public UnusedDependencyRemover(IPreviousResultsService previousResultsService, 
-        IPackageVersionScanner packageVersionScanner, 
+    public UnusedDependencyRemover(IPackageVersionScanner packageVersionScanner, 
         ILogger<UnusedDependencyRemover> logger, 
         ISolutionBuilder solutionBuilder,
         NupendenciesOptions nupendenciesOptions)
     {
-        _previousResultsService = previousResultsService;
         _packageVersionScanner = packageVersionScanner;
         _logger = logger;
         _solutionBuilder = solutionBuilder;
@@ -65,12 +62,6 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
             var name = package.Name;
             var projectPath = package.Project.ProjectPath;
             var version = package.OriginalVersion;
-
-            if (!_previousResultsService.ShouldTryRemove(package))
-            {
-                _logger.LogDebug("Skipping removal of {Package} from {Project} due to it not being successful in a previous run", name, package.Project.Name);
-                continue;
-            }
 
             if (package.IsConditional)
             {
@@ -106,9 +97,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
     {
         _logger.LogDebug("Package {PackageName} could not be removed from Project {ProjectName}",
             package.Name, package.Project.Name);
-
-        _previousResultsService.WriteUnableToRemovePackageEntry(package);
-
+        
         package.UndoRemove();
     }
 }

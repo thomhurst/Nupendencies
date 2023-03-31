@@ -49,7 +49,7 @@ public class PackageVersionScanner : IPackageVersionScanner
             }
         
             var result = await Cli.Wrap(Path.Combine(sdk.Directory, "MSBuild.exe"))
-                .WithWorkingDirectory(Path.GetDirectoryName(projectPath))
+                .WithWorkingDirectory(Path.GetDirectoryName(projectPath)!)
                 .WithArguments($"\"{Path.GetFileName(projectPath)}\" /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath={tempFile}")
                 .WithEnvironmentVariables(new Dictionary<string, string?>
                 {
