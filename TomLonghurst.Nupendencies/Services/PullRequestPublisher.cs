@@ -119,7 +119,8 @@ public class PullRequestPublisher : IPullRequestPublisher
 
         if (targetFrameworkUpdateResult.IsSuccessful)
         {
-            stringBuilder.AppendLine($".NET Upgraded > {targetFrameworkUpdateResult.LatestVersion}");
+            stringBuilder.AppendLine(".NET Upgraded");
+            stringBuilder.AppendLine($" - {targetFrameworkUpdateResult.OriginalVersion} > {targetFrameworkUpdateResult.LatestVersion}");
             stringBuilder.AppendLine();
         }
 
