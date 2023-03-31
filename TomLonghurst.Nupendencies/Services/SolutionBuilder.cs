@@ -48,44 +48,9 @@ public class SolutionBuilder : ISolutionBuilder
 
     private static bool CheckIsSuccessful(IEnumerable<ProjectBuildResult> results)
     {
-        if(results.Any(rw => rw.ExitCode != 0))
-        {
-            return false;
-        }
-
-        // if (!CheckOutputs(results.Select(x => x.Output.Trim()).ToList()))
-        // {
-        //     return false;
-        // }
-        //
-        // if (!CheckOutputs(results.Select(x => x.ErrorOutput.Trim()).ToList()))
-        // {
-        //     return false;
-        // }
-
-        return true;
+        return results.All(rw => rw.ExitCode == 0);
     }
-
-    /*private static bool CheckOutputs(IReadOnlyList<string> outputs)
-    {
-        if (outputs.Any(x => x.Contains("Build FAILED")))
-        {
-            return false;
-        }
-
-        if (outputs.Any(x => x.Contains(" -- FAILED.")))
-        {
-            return false;
-        }
-
-        if (outputs.Any(x => x.Contains("Error(s)") && !x.Contains("0 Error(s)")))
-        {
-            return false;
-        }
-
-        return true;
-    }*/
-
+    
     private async Task<IList<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, string target = "build")
     {
         var results = new List<ProjectBuildResult>();
@@ -124,14 +89,6 @@ public class SolutionBuilder : ISolutionBuilder
             return true;
         }
 
-        // var targetFramework = projectFile.Properties.FirstOrDefault(x => x.Name == "TargetFramework");
-        // if (targetFramework != null 
-        //     && targetFramework.Value.StartsWith("net") 
-        //     && !targetFramework.Value.Contains('.'))
-        // {
-        //     return true;
-        // }
-        
         var childProjects = projectToBuild.Children;
 
         return childProjects.Any(ShouldBuildUsingLegacyMsBuild);
