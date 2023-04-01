@@ -3,45 +3,60 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TomLonghurst.Nupendencies;
+using TomLonghurst.Nupendencies.Abstractions.Models;
+using TomLonghurst.Nupendencies.Contracts;
 using TomLonghurst.Nupendencies.Extensions;
-using TomLonghurst.Nupendencies.Services;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Extensions;
+using TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
+using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
+using TomLonghurst.Nupendencies.Options;
+
+namespace TomLonghurst.Nupendencies.Example;
 
 public class Program
 {
     public static async Task Main(string[] args)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets<Program>()
+            .Build();
+
+        var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>()!;
+        var gitHubOptions = configuration.GetSection("GitHub").Get<GitHubOptions>()!;
+        var azureDevOpsOptions = configuration.GetSection("AzureDevOps").Get<AzureDevOpsOptions>()!;
+
+        nupendenciesOptions.RepositoriesToScan = new List<Func<GitRepository, bool>>()
         {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddUserSecrets<Program>()
-                .Build();
-
-            var nupendenciesOptions = configuration.GetSection("Nupendencies").Get<NupendenciesOptions>();
-            
-            var services = new ServiceCollection()
-                .AddLogging(configure =>
-                {
-                    configure.AddConsole(console =>
-                    {
-                        console.TimestampFormat = "[HH:mm:ss] ";
-                    });
-                    configure.AddConfiguration(configuration.GetSection("Logging"));
-                })
-                .AddSingleton(configuration)
-                .AddNupendencies(nupendenciesOptions)
-                .PostConfigure<LoggerFilterOptions>(options =>
-                {
-                    options.MinLevel = LogLevel.Debug;
-                });
-
-            var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
-            {
-                ValidateScopes = true,
-                ValidateOnBuild = true
-            });
+            repository => repository.Name == "asos-customer-ids5-poc"
+        };
         
-            var nupendencyUpdater = serviceProvider.GetRequiredService<INupendencyUpdater>();
+        var services = new ServiceCollection()
+            .AddLogging(configure =>
+            {
+                configure.AddSimpleConsole(console =>
+                {
+                    console.TimestampFormat = "[HH:mm:ss] ";
+                });
+                configure.AddConfiguration(configuration.GetSection("Logging"));
+            })
+            .AddSingleton(configuration)
+            .AddNupendencies(nupendenciesOptions)
+            //.AddGitHubProvider(gitHubOptions)
+            .AddAzureDevOpsProvider(azureDevOpsOptions)
+            .PostConfigure<LoggerFilterOptions>(options =>
+            {
+                options.MinLevel = LogLevel.Debug;
+            });
 
-            await nupendencyUpdater.Start();
-        }
+        var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateScopes = true,
+            ValidateOnBuild = true
+        });
+
+        var nupendencyUpdater = serviceProvider.GetRequiredService<INupendencyUpdater>();
+
+        await nupendencyUpdater.Start();
+    }
 }

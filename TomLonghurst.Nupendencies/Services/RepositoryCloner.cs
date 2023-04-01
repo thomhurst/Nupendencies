@@ -1,36 +1,34 @@
 ﻿using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using TomLonghurst.Nupendencies.Models;
+using TomLonghurst.Nupendencies.Abstractions.Models;
+using TomLonghurst.Nupendencies.Contracts;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class RepositoryCloner : IRepositoryCloner
 {
     private readonly IDirectoryService _directoryService;
-    private readonly IGitCredentialsProvider _gitCredentialsProvider;
     private readonly ILogger<RepositoryCloner> _logger;
 
     public RepositoryCloner(IDirectoryService directoryService,
-        IGitCredentialsProvider gitCredentialsProvider,
         ILogger<RepositoryCloner> logger)
     {
         _directoryService = directoryService;
-        _gitCredentialsProvider = gitCredentialsProvider;
         _logger = logger;
     }
 
-    public string CloneRepo(Repo repo)
+    public string CloneRepository(GitRepository gitRepository)
     {
         var tempDirectory = _directoryService.CreateTemporaryDirectory();
         
         _logger.LogDebug("Creating Directory: {Directory}", tempDirectory);
 
-        Repository.Clone(repo.GitUrl, Path.Combine(tempDirectory, repo.Name), new CloneOptions
+        Repository.Clone(gitRepository.GitUrl, Path.Combine(tempDirectory, gitRepository.Name), new CloneOptions
         {
-            CredentialsProvider = (url, fromUrl, types) => _gitCredentialsProvider.GetCredentials(repo.RepositoryType, types)
+            CredentialsProvider = (_, _, types) => gitRepository.Credentials
         });
 
-        _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", repo.Name, tempDirectory);
+        _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", gitRepository.Name, tempDirectory);
 
         return tempDirectory;
     }

@@ -9,6 +9,8 @@
   </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.AzureDevOps\TomLonghurst.Nupendencies.GitProviders.AzureDevOps.csproj" />
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.GitHub\TomLonghurst.Nupendencies.GitProviders.GitHub.csproj" />
       <ProjectReference Include="..\TomLonghurst.Nupendencies\TomLonghurst.Nupendencies.csproj" />
     </ItemGroup>
 

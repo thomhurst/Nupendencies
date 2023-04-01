@@ -2,59 +2,62 @@
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Locator;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using TomLonghurst.Nupendencies.NetSdkLocator.Models;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace TomLonghurst.Nupendencies.NetSdkLocator
+namespace TomLonghurst.Nupendencies.NetSdkLocator;
+
+public static class Program
 {
-    public static class Program
+    /// <summary>
+    ///  Needs NuGet reference to <see cref="System.Runtime.CompilerServices.Unsafe"/>
+    /// </summary>
+    /// <param name="args"></param>
+    public static void Main(string[] args)
     {
-        /// <summary>
-        ///  Needs NuGet reference to <see cref="System.Runtime.CompilerServices.Unsafe"/>
-        /// </summary>
-        /// <param name="args"></param>
-        public static void Main(string[] args)
+        var sdks = MSBuildLocator.QueryVisualStudioInstances()
+            .Where(x => x.DiscoveryType is DiscoveryType.DotNetSdk or DiscoveryType.VisualStudioSetup)
+            .Select(x => GenerateNetSdk(x))
+            .ToList();
+
+        var sdksJson = JsonConvert.SerializeObject(sdks, new JsonSerializerSettings
         {
-            var sdks = MSBuildLocator.QueryVisualStudioInstances()
-                .Where(x => x.DiscoveryType is DiscoveryType.DotNetSdk or DiscoveryType.VisualStudioSetup)
-                .Select(x => GenerateNetSdk(x))
-                .ToList();
+            Converters = { new VersionConverter() }
+        });
 
-            var sdksJson = JsonSerializer.Serialize(sdks);
+        Console.WriteLine(sdksJson);
+    }
 
-            Console.WriteLine(sdksJson);
-        }
+    private static NetSdk GenerateNetSdk(VisualStudioInstance x)
+    {
+        var fileName = x.DiscoveryType == DiscoveryType.DotNetSdk
+            ? "dotnet.dll"
+            : "MSBuild.exe";
 
-        private static NetSdk GenerateNetSdk(VisualStudioInstance x)
-        {
-            var fileName = x.DiscoveryType == DiscoveryType.DotNetSdk
-                ? "dotnet.dll"
-                : "MSBuild.exe";
+        var path = Path.Combine(x.MSBuildPath, fileName);
 
-            var path = Path.Combine(x.MSBuildPath, fileName);
-
-            var is64Bit = Is64Bit(path); 
+        var is64Bit = Is64Bit(path); 
                 
-            return new NetSdk
-            {
-                Directory = x.MSBuildPath,
-                Name = x.Name,
-                Version = x.Version,
-                IsDotNetSdk = x.DiscoveryType == DiscoveryType.DotNetSdk,
-                Is64Bit = is64Bit
-            };
-        }
-
-        private static bool Is64Bit(string fileName)
+        return new NetSdk
         {
-            if (!Environment.Is64BitOperatingSystem)
-            {
-                return false;
-            }
+            Directory = x.MSBuildPath,
+            Name = x.Name,
+            Version = x.Version,
+            IsDotNetSdk = x.DiscoveryType == DiscoveryType.DotNetSdk,
+            Is64Bit = is64Bit
+        };
+    }
 
-            var folder32Bit = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-
-            return !Path.GetFullPath(fileName).Contains(folder32Bit);
+    private static bool Is64Bit(string fileName)
+    {
+        if (!Environment.Is64BitOperatingSystem)
+        {
+            return false;
         }
+
+        var folder32Bit = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+        return !Path.GetFullPath(fileName).Contains(folder32Bit);
     }
 }

@@ -8,33 +8,39 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliWrap" Version="3.5.0" />
+      <PackageReference Include="CliWrap" Version="3.6.0" />
       <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-      <PackageReference Include="Microsoft.Build" Version="17.4.0" ExcludeAssets="runtime" />
+      <PackageReference Include="Microsoft.Build" Version="17.5.0" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.3" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-      <PackageReference Include="NuGet.Common" Version="6.4.0" />
-      <PackageReference Include="NuGet.Configuration" Version="6.4.0" />
-      <PackageReference Include="NuGet.Credentials" Version="6.4.0" />
-      <PackageReference Include="NuGet.Packaging" Version="6.4.0" />
-      <PackageReference Include="NuGet.ProjectModel" Version="6.4.0" />
-      <PackageReference Include="NuGet.Protocol" Version="6.4.0" />
-      <PackageReference Include="NuGet.Versioning" Version="6.4.0" />
-      <PackageReference Include="Octokit.GraphQL" Version="0.1.9-beta" />
+      <PackageReference Include="NuGet.Common" Version="6.5.0" />
+      <PackageReference Include="NuGet.Configuration" Version="6.5.0" />
+      <PackageReference Include="NuGet.Credentials" Version="6.5.0" />
+      <PackageReference Include="NuGet.Packaging" Version="6.5.0" />
+      <PackageReference Include="NuGet.ProjectModel" Version="6.5.0" />
+      <PackageReference Include="NuGet.Protocol" Version="6.5.0" />
+      <PackageReference Include="NuGet.Versioning" Version="6.5.0" />
       <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-      <PackageReference Include="Semver" Version="2.2.0" />
-      <PackageReference Include="System.Text.Json" Version="7.0.0" />
+      <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+      <PackageReference Include="System.Text.Json" Version="7.0.2" />
       <PackageReference Include="TomLonghurst.EnumerableAsyncProcessor" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.Abstractions\TomLonghurst.Nupendencies.Abstractions.csproj" />
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.csproj">
+              <PrivateAssets>analyzers;build</PrivateAssets>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="TomLonghurst.Nupendencies.targets" PackagePath="build/TomLonghurst.Nupendencies.targets" />
     </ItemGroup>
 
 </Project>
