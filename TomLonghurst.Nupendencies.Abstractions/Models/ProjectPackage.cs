@@ -70,11 +70,25 @@ public record ProjectPackage
     {
         if (_lastSibling != null)
         {
-            _parent.InsertAfterChild(PackageReferenceTag, _lastSibling);
+            try
+            {
+                _parent.InsertAfterChild(PackageReferenceTag, _lastSibling);
+            }
+            catch
+            {
+                _parent.AppendChild(PackageReferenceTag);
+            }
         }
         else if (_nextSibling != null)
         {
-            _parent.InsertBeforeChild(PackageReferenceTag, _nextSibling);
+            try
+            {
+                _parent.InsertBeforeChild(PackageReferenceTag, _nextSibling);
+            }
+            catch
+            {
+                _parent.AppendChild(PackageReferenceTag);
+            }
         }
         else
         {
