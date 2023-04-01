@@ -1,27 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-      <UserSecretsId>ce885fc5-c490-4256-ba6e-9f0668c778b7</UserSecretsId>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>ce885fc5-c490-4256-ba6e-9f0668c778b7</UserSecretsId>
   </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.AzureDevOps\TomLonghurst.Nupendencies.GitProviders.AzureDevOps.csproj" />
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.GitHub\TomLonghurst.Nupendencies.GitProviders.GitHub.csproj" />
-      <ProjectReference Include="..\TomLonghurst.Nupendencies\TomLonghurst.Nupendencies.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.AzureDevOps\TomLonghurst.Nupendencies.GitProviders.AzureDevOps.csproj" />
+    <ProjectReference Include="..\TomLonghurst.Nupendencies.GitProviders.GitHub\TomLonghurst.Nupendencies.GitProviders.GitHub.csproj" />
+    <ProjectReference Include="..\TomLonghurst.Nupendencies\TomLonghurst.Nupendencies.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
+  </ItemGroup>
 </Project>
