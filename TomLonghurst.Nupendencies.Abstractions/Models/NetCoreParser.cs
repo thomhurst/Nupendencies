@@ -14,6 +14,11 @@ public class NetCoreParser
             return true;
         }
         
+        if (frameworkVersion.StartsWith("netstandard", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return false;
+        }
+        
         if (frameworkVersion.StartsWith("net", StringComparison.InvariantCultureIgnoreCase)
             && frameworkVersion.Contains('.'))
         {
