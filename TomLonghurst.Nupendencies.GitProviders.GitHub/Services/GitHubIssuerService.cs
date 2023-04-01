@@ -1,6 +1,9 @@
 ﻿using Octokit.GraphQL;
+using Octokit.GraphQL.Core;
+using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
+using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
 
 namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
@@ -8,21 +11,20 @@ public class GitHubIssuerService : IGitHubIssuerService
 {
     private readonly GitHubHttpClient _githubHttpClient;
     private readonly IGitHubGraphQlClientProvider _graphQlClientProvider;
+    private readonly GitHubOptions _gitHubOptions;
 
     public GitHubIssuerService(GitHubHttpClient githubHttpClient,
-        IGitHubGraphQlClientProvider graphQlClientProvider)
+        IGitHubGraphQlClientProvider graphQlClientProvider,
+        GitHubOptions gitHubOptions)
     {
         _githubHttpClient = githubHttpClient;
         _graphQlClientProvider = graphQlClientProvider;
+        _gitHubOptions = gitHubOptions;
     }
 
     public async Task<IList<GitIssue>> GetCurrentIssues(GitRepository gitRepository)
     {
-        var query = new Query()
-            .Organization(gitRepository.Owner)
-            .Repository(gitRepository.Name)
-            .Issues(null, null, null, null, null, null, null, null)
-            .AllPages()
+        var query = GetIssuesQueryableList(gitRepository)
             .Select(x => new GitIssue
             {
                 IssueNumber = x.Number,
@@ -37,6 +39,24 @@ public class GitHubIssuerService : IGitHubIssuerService
         var issues = await _graphQlClientProvider.GitHubGraphQlClient.Run(query);
 
         return issues.ToList();
+    }
+
+    private IQueryableList<Issue> GetIssuesQueryableList(GitRepository gitRepository)
+    {
+        if (_gitHubOptions.GitHubSpace is GitHubUserSpace)
+        {
+            return new Query()
+                .User(gitRepository.Owner)
+                .Repository(gitRepository.Name)
+                .Issues(null, null, null, null, null, null, null, null)
+                .AllPages();
+        }
+        
+        return new Query()
+            .Organization(gitRepository.Owner)
+            .Repository(gitRepository.Name)
+            .Issues(null, null, null, null, null, null, null, null)
+            .AllPages();
     }
 
     public async Task RaiseIssue(GitRepository gitRepository, string title, string body)
