@@ -1,10 +1,12 @@
 ﻿using LibGit2Sharp;
 using Octokit.GraphQL;
+using Octokit.GraphQL.Core;
 using Octokit.GraphQL.Model;
 using TomLonghurst.Nupendencies.Abstractions.Contracts;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
+using Repository = Octokit.GraphQL.Model.Repository;
 
 namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
@@ -28,11 +30,7 @@ public class GitHubProvider : IGitProvider
 
     public async Task<IEnumerable<GitRepository>> GetRepositories()
     {
-        var query = new Query()
-            .Organization(_githubOptions.Organization)
-            .Team(_githubOptions.Team)
-            .Repositories()
-            .AllPages()
+        var query = GetRepositoryQueryableList()
             .Select(r => new GitRepository
             {
                 Provider = this,
@@ -72,6 +70,23 @@ public class GitHubProvider : IGitProvider
         repositories.ForEach(r => r.GitUrl = r.GitUrl.Replace("git@github.com:", "https://github.com/"));
         
         return repositories;
+    }
+
+    private IQueryableList<Repository> GetRepositoryQueryableList()
+    {
+        if (_githubOptions.GitHubSpace is GitHubTeamSpace gitHubTeamSpace)
+        {
+            return new Query()
+                .Organization(gitHubTeamSpace.Organization)
+                .Team(gitHubTeamSpace.TeamName)
+                .Repositories()
+                .AllPages();
+        }
+        
+        return new Query()
+            .User(_githubOptions.AuthenticationUsername)
+            .Repositories()
+            .AllPages();
     }
 
     public async Task<IEnumerable<GitPullRequest>> GetOpenPullRequests(GitRepository repository)
