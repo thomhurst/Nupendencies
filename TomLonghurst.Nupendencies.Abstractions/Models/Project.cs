@@ -74,6 +74,7 @@ public record Project
     {
         if (ProjectPath.Contains("Directory.Build.props", StringComparison.InvariantCultureIgnoreCase))
         {
+            IsBuildable = false;
             yield break;
         }
         
@@ -91,7 +92,7 @@ public record Project
 
     public IEnumerable<Project> GetUppermostProjectsReferencingThisProject()
     {
-        return Enumerable.DistinctBy(GetUppermostProjects(), x => x.ProjectPath);
+        return GetUppermostProjects().DistinctBy(x => x.ProjectPath);
     }
 
     public ProjectPackage? GetPackage(string packageName)
@@ -208,6 +209,7 @@ public record Project
     }
 
     public static IEqualityComparer<Project> Comparer { get; } = new FilePathEqualityComparer();
+    public bool IsBuildable { get; private set; } = true;
 
     public virtual bool Equals(Project? other)
     {

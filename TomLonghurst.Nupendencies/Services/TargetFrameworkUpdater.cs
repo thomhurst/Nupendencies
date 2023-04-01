@@ -37,7 +37,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
             netCoreProject.TargetFramework.CurrentValue = LatestNetValue;
         }
 
-        var projectsToBuild = netCoreProjects.GetProjectsToBuild();
+        var projectsToBuild = netCoreProjects.SelectMany(x => x.Repository.AllProjects).GetProjectsToBuild();
 
         var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
     

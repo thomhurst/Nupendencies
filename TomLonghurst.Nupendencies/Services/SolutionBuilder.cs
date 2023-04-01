@@ -58,7 +58,7 @@ public class SolutionBuilder : ISolutionBuilder
     {
         var results = new List<ProjectBuildResult>();
 
-        foreach (var projectToBuild in projectsToBuild.Distinct())
+        foreach (var projectToBuild in projectsToBuild.Where(p => p.IsBuildable).Distinct())
         {
             // Fail fast
             if (results.Any(x => x.ExitCode != 0))

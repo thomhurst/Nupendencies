@@ -4,7 +4,7 @@ namespace TomLonghurst.Nupendencies.Options;
 
 public record NupendenciesOptions
 {
-    public required bool TryRemoveUnusedPackages { get; init; }
+    public bool TryRemoveUnusedPackages { get; init; }
 
     public List<PrivateNugetFeedOptions> PrivateNugetFeedOptions { get; } = new();
     public List<Func<GitRepository, bool>> RepositoriesToScan { get; set; } = new();

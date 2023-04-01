@@ -13,13 +13,14 @@ public static class ProjectExtensions
     public static ImmutableHashSet<Project> GetProjectsToBuild(this IEnumerable<Project> projects)
     {
         return projects
+            .SelectMany(x => x.Repository.AllProjects)
             .SelectMany(GetProjectsToBuild)
             .ToImmutableHashSet();
     }
     
     public static ImmutableHashSet<Project> GetProjectsToBuild(this ProjectPackage projectPackage)
     {
-        return projectPackage.Project.GetProjectsToBuild();
+        return projectPackage.Project.Repository.AllProjects.GetProjectsToBuild();
     }
     
     public static ImmutableHashSet<Project> GetProjectsToBuild(this IEnumerable<ProjectPackage> projectPackages)

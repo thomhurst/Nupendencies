@@ -14,6 +14,8 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
     private readonly NupendenciesOptions _nupendenciesOptions;
 
     private readonly Func<ProjectPackage, bool>[] _packagesToNotRemoveRules = {
+        s => s.IsConditional,
+        s => s.PackageReferenceTag.Metadata?.Any(m => m.Name.Contains("Assets", StringComparison.OrdinalIgnoreCase)) == true,
         s => s.Name.Contains("Microsoft.NET.Test", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("NUnit", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("coverlet", StringComparison.OrdinalIgnoreCase),
@@ -22,8 +24,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
         s => s.Name.Contains("Analyzer", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("Analyser", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("CodeDom", StringComparison.OrdinalIgnoreCase),
-        s => s.PackageReferenceTag.Metadata?.Any(m => m.Name == "OutputItemType") == true,
-        s => s.IsConditional,
+        s => s.PackageReferenceTag.Metadata?.Any(m => m.Name.Contains("OutputItemType", StringComparison.OrdinalIgnoreCase)) == true,
         s => s.Name.StartsWith("Microsoft.ApplicationInsights.Web", StringComparison.OrdinalIgnoreCase),
         s => s.Name.Contains("AspNet", StringComparison.OrdinalIgnoreCase),
         s => s.Name.StartsWith("Newtonsoft", StringComparison.OrdinalIgnoreCase),
@@ -76,7 +77,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
                 continue;
             }
 
-            var projectsToBuild = package.GetProjectsToBuild();
+            var projectsToBuild = package.Project.Repository.AllProjects.GetProjectsToBuild();
 
             var build = await _solutionBuilder.BuildProjects(projectsToBuild);
 
