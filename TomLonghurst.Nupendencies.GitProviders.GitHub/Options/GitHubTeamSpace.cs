@@ -2,6 +2,6 @@
 
 public sealed record GitHubTeamSpace : GitHubSpace
 {
-    public required string Organization { get; init; }
-    public required string TeamName { get; init; }
+    public required string Organization { get; set; }
+    public required string TeamName { get; set; }
 }
