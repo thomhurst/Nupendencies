@@ -36,14 +36,11 @@ public class SdkFinder : ISdkFinder
             }
             
             var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-            
-            var buildLocatorCsProj = Directory.GetFiles(workingDirectory, "TomLonghurst.Nupendencies.NetSdkLocator.dll",
-                SearchOption.AllDirectories).First();
 
-            var buildLocatorDirectory = Path.GetDirectoryName(buildLocatorCsProj)!;
+            var netSdkLocatorDirectory = Path.Combine(workingDirectory, "NetSdkLocator");
 
-            var resultNetCore = await ExecuteLocator(buildLocatorDirectory, "net7.0");
-            var resultNetFramework = await ExecuteLocator(buildLocatorDirectory, "net48");
+            var resultNetCore = await ExecuteDotnetLocator(Path.Combine(netSdkLocatorDirectory, "net7.0"));
+            var resultNetFramework = await ExecuteMsBuildLocator(Path.Combine(netSdkLocatorDirectory, "net48"));
 
             _cachedSdks = resultNetCore.Concat(resultNetFramework).ToArray();
         
@@ -60,11 +57,11 @@ public class SdkFinder : ISdkFinder
         }
     }
 
-    private async Task<NetSdk[]> ExecuteLocator(string buildLocatorDirectory, string framework)
+    private async Task<NetSdk[]> ExecuteDotnetLocator(string buildLocatorDirectory)
     {
         var result = await Cli.Wrap("dotnet")
             .WithWorkingDirectory(buildLocatorDirectory)
-            .WithArguments($"\"TomLonghurst.Nupendencies.NetSdkLocator.dll\" --framework {framework}")
+            .WithArguments($"\"TomLonghurst.Nupendencies.NetSdkLocator.dll\"")
             .WithEnvironmentVariables(new Dictionary<string, string?>
             {
                 ["MsBuildExtensionPath"] = null,
@@ -76,7 +73,23 @@ public class SdkFinder : ISdkFinder
 
         if (result.ExitCode != 0)
         {
-            _logger.LogError("Error retrieving {Version} SDK: {Output}", framework, result.StandardOutput);
+            _logger.LogError("Error retrieving Dotnet exe: {Output}", result.StandardOutput);
+            return Array.Empty<NetSdk>();
+        }
+
+        return JsonSerializer.Deserialize<NetSdk[]>(result.StandardOutput) ?? Array.Empty<NetSdk>();
+    }
+    
+    private async Task<NetSdk[]> ExecuteMsBuildLocator(string buildLocatorDirectory)
+    {
+        var result = await Cli.Wrap("TomLonghurst.Nupendencies.NetSdkLocator")
+            .WithWorkingDirectory(buildLocatorDirectory)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync();
+
+        if (result.ExitCode != 0)
+        {
+            _logger.LogError("Error retrieving {Version} SDK: {Output}", result.StandardOutput);
             return Array.Empty<NetSdk>();
         }
 
