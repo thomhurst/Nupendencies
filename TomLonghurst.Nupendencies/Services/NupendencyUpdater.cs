@@ -41,6 +41,7 @@ public class NupendencyUpdater : INupendencyUpdater
 
         var repositoriesToInclude = repositories
             .SelectMany(r => r)
+            .Where(r => !r.IsDisabled)
             .Where(ShouldScanRepository);
 
         foreach (var repository in repositoriesToInclude)
