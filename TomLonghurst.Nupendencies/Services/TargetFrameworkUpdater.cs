@@ -60,8 +60,14 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
 
     private static bool NeedsUpdating(Project x)
     {
-        var currentVersion = double.Parse(x.TargetFramework.CurrentValue!.Replace("net", string.Empty));
+        var currentVersionString = x.TargetFramework.CurrentValue!
+            .Replace("netcoreapp", string.Empty)
+            .Replace("net", string.Empty);
+        
+        var currentVersion = double.Parse(currentVersionString);
+        
         var latestVersion = double.Parse(LatestNetValue.Replace("net", string.Empty)); 
+        
         return currentVersion < latestVersion;
     }
 }
