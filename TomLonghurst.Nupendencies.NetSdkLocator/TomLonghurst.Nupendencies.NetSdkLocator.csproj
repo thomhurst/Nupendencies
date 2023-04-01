@@ -23,4 +23,26 @@
       <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="$(MSBuildProjectDirectory)\NetSdkLocator\**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="TomLonghurst.Nupendencies.NetSdkLocator.targets">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <Target Name="CopyBuildResult" AfterTargets="Build">
+        <ItemGroup>
+            <_CopyBuildResult Include="$(TargetDir)\*.dll;$(TargetDir)\*.exe;$(TargetDir)\*.json" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_CopyBuildResult)" DestinationFolder="$(MSBuildProjectDirectory)\NetSdkLocator\$(TargetFramework)" />
+
+        <ItemGroup>
+            <_ContentFiles Include="$(MSBuildThisFileDirectory)..\contentFiles\any\any\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_ContentFiles)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    </Target>
+
 </Project>
