@@ -6,11 +6,6 @@
         <LangVersion>10</LangVersion>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
-    
-    <PropertyGroup>
-        <NuspecFile>TomLonghurst.Nupendencies.NetSdkLocator.nuspec</NuspecFile>
-        <NuspecProperties>version=$(Version)</NuspecProperties>
-    </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
@@ -24,13 +19,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="$(MSBuildProjectDirectory)\NetSdkLocator\**" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="$(MSBuildProjectDirectory)\NetSdkLocator\**" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="contentFiles/NetSdkLocator" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="TomLonghurst.Nupendencies.NetSdkLocator.targets">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <Content Include="TomLonghurst.Nupendencies.NetSdkLocator.targets" PackagePath="build/TomLonghurst.Nupendencies.NetSdkLocator.targets" />
     </ItemGroup>
 
     <Target Name="CopyBuildResult" AfterTargets="Build">
@@ -38,11 +31,6 @@
             <_CopyBuildResult Include="$(TargetDir)\*.dll;$(TargetDir)\*.exe;$(TargetDir)\*.json" />
         </ItemGroup>
         <Copy SourceFiles="@(_CopyBuildResult)" DestinationFolder="$(MSBuildProjectDirectory)\NetSdkLocator\$(TargetFramework)" />
-
-        <ItemGroup>
-            <_ContentFiles Include="$(MSBuildThisFileDirectory)..\contentFiles\any\any\**\*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(_ContentFiles)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
     </Target>
 
 </Project>

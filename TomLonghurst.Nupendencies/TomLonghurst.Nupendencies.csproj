@@ -37,4 +37,8 @@
       <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="TomLonghurst.Nupendencies.targets" PackagePath="build/TomLonghurst.Nupendencies.targets" />
+    </ItemGroup>
+
 </Project>
