@@ -141,6 +141,11 @@ public class NuGetClient
             return null;
         }
 
+        if (!packageSearchMetadatas.Any())
+        {
+            return null;
+        }
+        
         var packageSearchMetadata = packageSearchMetadatas.OrderByDescending(x => x.Identity.Version).First();
 
         var packageInformation = new NuGetPackageInformation
