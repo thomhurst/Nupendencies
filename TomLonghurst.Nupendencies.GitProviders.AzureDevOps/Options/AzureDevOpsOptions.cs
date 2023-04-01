@@ -7,5 +7,5 @@ public class AzureDevOpsOptions
     public required string Organization { get; set; }
     public required string ProjectName { get; set; }
     internal Guid ProjectGuid { get; set; }
-    public required string[]? WorkItemIds { get; set; }
+    public required string[]? WorkItemIdsToAttachToPullRequests { get; set; }
 }

@@ -35,7 +35,7 @@ public class DevOpsPullRequestService : IDevOpsPullRequestService
                 Description = createPullRequestModel.Body,
                 TargetRefName = createPullRequestModel.BaseBranch,
                 SourceRefName = createPullRequestModel.HeadBranch,
-                WorkItemRefs = _azureDevOpsOptions.WorkItemIds?.Select(workItemId => new ResourceRef { Id = workItemId }).ToArray()
+                WorkItemRefs = _azureDevOpsOptions.WorkItemIdsToAttachToPullRequests?.Select(workItemId => new ResourceRef { Id = workItemId }).ToArray()
             },
             project: _azureDevOpsOptions.ProjectGuid,
             repositoryId: createPullRequestModel.Repository.Id);
