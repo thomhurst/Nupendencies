@@ -129,14 +129,12 @@ public class PackageVersionScanner : IPackageVersionScanner
                 return false;
             }
 
-            if (newDirectDependenciesOfThisPackage.Any(x => x.LibraryRange?.VersionRange?.MinVersion?.Version 
-                                                            >= versionRemoved?.ToVersion()))
+            if (newDirectDependenciesOfThisPackage.Any(x => SemVersion.CompareSortOrder(SemVersion.FromVersion(x.LibraryRange?.VersionRange?.MinVersion?.Version), versionRemoved) >= 0))
             {
                 return false;
             }
 
-            if (newIndirectDependenciesOfThisPackage.Any(x => x.VersionRange?.MinVersion?.Version 
-                                                              >= versionRemoved?.ToVersion()))
+            if (newIndirectDependenciesOfThisPackage.Any(x => SemVersion.CompareSortOrder(SemVersion.FromVersion(x.VersionRange?.MinVersion?.Version), versionRemoved) >= 0))
             {
                 return false;
             }
