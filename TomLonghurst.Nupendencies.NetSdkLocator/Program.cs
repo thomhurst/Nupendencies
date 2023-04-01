@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Locator;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using TomLonghurst.Nupendencies.NetSdkLocator.Models;
 
 namespace TomLonghurst.Nupendencies.NetSdkLocator;
@@ -20,7 +21,10 @@ public static class Program
             .Select(x => GenerateNetSdk(x))
             .ToList();
 
-        var sdksJson = JsonConvert.SerializeObject(sdks);
+        var sdksJson = JsonConvert.SerializeObject(sdks, new JsonSerializerSettings
+        {
+            Converters = { new VersionConverter() }
+        });
 
         Console.WriteLine(sdksJson);
     }

@@ -82,11 +82,18 @@ public class SdkFinder : ISdkFinder
     
     private async Task<NetSdk[]> ExecuteMsBuildLocator(string buildLocatorDirectory)
     {
-        var result = await Cli.Wrap("TomLonghurst.Nupendencies.NetSdkLocator")
+        var result = await Cli.Wrap("Powershell")
+            .WithArguments("powershell.exe -ExecutionPolicy Bypass -Command \".\\TomLonghurst.Nupendencies.NetSdkLocator.exe\"")
             .WithWorkingDirectory(buildLocatorDirectory)
+            .WithEnvironmentVariables(new Dictionary<string, string?>
+            {
+                ["MsBuildExtensionPath"] = null,
+                ["MsBuildSDKsPath"] = null,
+                ["MSBUILD_EXE_PATH"] = null
+            })
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync();
-
+        
         if (result.ExitCode != 0)
         {
             _logger.LogError("Error retrieving {Version} SDK: {Output}", result.StandardOutput);
