@@ -2,8 +2,8 @@
 
 public class PrivateNugetFeedOptions
 {
-    public required string Username { get; init; }
-    public required string PatToken { get; init; }
-    public required string SourceName { get; init; }
-    public required string SourceUrl { get; init; }
+    public required string Username { get; set; }
+    public required string PatToken { get; set; }
+    public required string SourceName { get; set; }
+    public required string SourceUrl { get; set; }
 }
