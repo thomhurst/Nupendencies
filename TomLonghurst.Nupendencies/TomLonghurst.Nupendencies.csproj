@@ -34,7 +34,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\TomLonghurst.Nupendencies.Abstractions\TomLonghurst.Nupendencies.Abstractions.csproj" />
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.csproj" />
+      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator\TomLonghurst.Nupendencies.NetSdkLocator.csproj">
+              <PrivateAssets>analyzers;build</PrivateAssets>
+      </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>
