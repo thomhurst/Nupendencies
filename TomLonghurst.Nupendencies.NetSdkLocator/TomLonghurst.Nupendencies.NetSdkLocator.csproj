@@ -1,34 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFrameworks>net48;net7.0</TargetFrameworks>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-        <LangVersion>10</LangVersion>
-        <OutputType>Exe</OutputType>
-    </PropertyGroup>
-
+  <PropertyGroup>
+    <TargetFrameworks>net48;net7.0</TargetFrameworks>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <LangVersion>10</LangVersion>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildProjectDirectory)\NetSdkLocator\**" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="contentFiles/NetSdkLocator" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TomLonghurst.Nupendencies.NetSdkLocator.targets" PackagePath="build/TomLonghurst.Nupendencies.NetSdkLocator.targets" />
+  </ItemGroup>
+  <Target Name="CopyBuildResult" AfterTargets="Build">
     <ItemGroup>
-      <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <_CopyBuildResult Include="$(TargetDir)\*.dll;$(TargetDir)\*.exe;$(TargetDir)\*.json" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\TomLonghurst.Nupendencies.NetSdkLocator.Models\TomLonghurst.Nupendencies.NetSdkLocator.Models.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="$(MSBuildProjectDirectory)\NetSdkLocator\**" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="contentFiles/NetSdkLocator" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="TomLonghurst.Nupendencies.NetSdkLocator.targets" PackagePath="build/TomLonghurst.Nupendencies.NetSdkLocator.targets" />
-    </ItemGroup>
-
-    <Target Name="CopyBuildResult" AfterTargets="Build">
-        <ItemGroup>
-            <_CopyBuildResult Include="$(TargetDir)\*.dll;$(TargetDir)\*.exe;$(TargetDir)\*.json" />
-        </ItemGroup>
-        <Copy SourceFiles="@(_CopyBuildResult)" DestinationFolder="$(MSBuildProjectDirectory)\NetSdkLocator\$(TargetFramework)" />
-    </Target>
-
+    <Copy SourceFiles="@(_CopyBuildResult)" DestinationFolder="$(MSBuildProjectDirectory)\NetSdkLocator\$(TargetFramework)" />
+  </Target>
 </Project>
