@@ -10,5 +10,6 @@ public record PackageUpdateResult
     public IEnumerable<string> FileLines => Packages
         .Select(x => x.Project.ProjectPath + $" | Line: {x.PackageReferenceTag.Location.Line}")
         .ToList();
+        
     public required bool PackageDowngradeDetected { get; set; }
 }

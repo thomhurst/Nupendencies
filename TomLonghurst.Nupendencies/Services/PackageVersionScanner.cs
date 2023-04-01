@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using CliWrap;
 using CliWrap.Buffered;
+using Microsoft.Extensions.Logging;
 using NuGet.ProjectModel;
 using Semver;
 using TomLonghurst.EnumerableAsyncProcessor.Extensions;
@@ -17,14 +18,17 @@ public class PackageVersionScanner : IPackageVersionScanner
 {
     private readonly INetSdkProvider _netSdkProvider;
     private readonly NuGetClient _nuGetClient;
+    private readonly ILogger<PackageVersionScanner> _logger;
     private readonly string? _azureArtifactsCredentialsJson;
 
     public PackageVersionScanner(INetSdkProvider netSdkProvider, 
         NupendenciesOptions nupendenciesOptions,
-        NuGetClient nuGetClient)
+        NuGetClient nuGetClient,
+        ILogger<PackageVersionScanner> logger)
     {
         _netSdkProvider = netSdkProvider;
         _nuGetClient = nuGetClient;
+        _logger = logger;
         _azureArtifactsCredentialsJson = JsonSerializer.Serialize(new AzureArtifactsCredentials(nupendenciesOptions.PrivateNugetFeedOptions
             .Select(x => new EndpointCredential(x.SourceUrl, x.Username, x.PatToken))
             .ToList()));
@@ -81,60 +85,68 @@ public class PackageVersionScanner : IPackageVersionScanner
     public async Task<bool> DowngradeDetected(Project project,
         string packageName, SemVersion versionRemoved)
     {
-        var upperProjects = project.GetProjectsToBuild();
+        try
+        {
+            var upperProjects = project.GetProjectsToBuild();
 
-        var newDependencyGraph = await upperProjects
-            .ToAsyncProcessorBuilder()
-            .SelectAsync(x => GenerateDependencyGraph(x.ProjectPath))
-            .ProcessInParallel();
-
-        var newDirectDependencies = newDependencyGraph
-            .OfType<DependencyGraphSpec>()
-            .SelectMany(x => x.Projects)
-            .Where(x => x != null)
-            .SelectMany(x => x.TargetFrameworks)
-            .Where(x => x != null)
-            .SelectMany(x => x.Dependencies)
-            .Where(x => x != null)
-            .ToList();
-
-        var newDirectDependenciesOfThisPackage = newDirectDependencies
-            .Where(x => x.Name == packageName)
-            .ToList();
-
-        var newIndirectDependencies = (await newDirectDependencies
-                .GroupBy(x => x.Name)
-                .Select(x => x.MaxBy(p => p.LibraryRange.VersionRange.MinVersion))
+            var newDependencyGraph = await upperProjects
                 .ToAsyncProcessorBuilder()
-                .SelectAsync(x => _nuGetClient.GetPackage(x!.Name, x.LibraryRange.VersionRange.MinVersion.ToFullString()))
-                .ProcessInParallel())
-            .Where(x => x != null)
-            .SelectMany(x => x!.Dependencies)
-            .Where(x => x != null)
-            .ToList();
+                .SelectAsync(x => GenerateDependencyGraph(x.ProjectPath))
+                .ProcessInParallel();
+
+            var newDirectDependencies = newDependencyGraph
+                .OfType<DependencyGraphSpec>()
+                .SelectMany(x => x.Projects)
+                .Where(x => x != null)
+                .SelectMany(x => x.TargetFrameworks)
+                .Where(x => x != null)
+                .SelectMany(x => x.Dependencies)
+                .Where(x => x != null)
+                .ToList();
+
+            var newDirectDependenciesOfThisPackage = newDirectDependencies
+                .Where(x => x.Name == packageName)
+                .ToList();
+
+            var newIndirectDependencies = (await newDirectDependencies
+                    .GroupBy(x => x.Name)
+                    .Select(x => x.MaxBy(p => p.LibraryRange.VersionRange.MinVersion))
+                    .ToAsyncProcessorBuilder()
+                    .SelectAsync(x => _nuGetClient.GetPackage(x!.Name, x.LibraryRange.VersionRange.MinVersion.ToFullString()))
+                    .ProcessInParallel())
+                .Where(x => x != null)
+                .SelectMany(x => x!.Dependencies)
+                .Where(x => x != null)
+                .ToList();
         
-        var newIndirectDependenciesOfThisPackage = newIndirectDependencies
-            .Where(x => x.Id == packageName)
-            .ToList();
+            var newIndirectDependenciesOfThisPackage = newIndirectDependencies
+                .Where(x => x.Id == packageName)
+                .ToList();
 
-        if (!newDirectDependenciesOfThisPackage.Any() && !newIndirectDependenciesOfThisPackage.Any())
-        {
-            // This should be an un-consumed package able to be removed
-            return false;
+            if (!newDirectDependenciesOfThisPackage.Any() && !newIndirectDependenciesOfThisPackage.Any())
+            {
+                // This should be an un-consumed package able to be removed
+                return false;
+            }
+
+            if (newDirectDependenciesOfThisPackage.Any(x => x.LibraryRange?.VersionRange?.MinVersion?.Version 
+                                                            >= versionRemoved?.ToVersion()))
+            {
+                return false;
+            }
+
+            if (newIndirectDependenciesOfThisPackage.Any(x => x.VersionRange?.MinVersion?.Version 
+                                                              >= versionRemoved?.ToVersion()))
+            {
+                return false;
+            }
+
+            return true;
         }
-
-        if (newDirectDependenciesOfThisPackage.Any(x => x.LibraryRange?.VersionRange?.MinVersion?.Version 
-                                                        >= versionRemoved?.ToVersion()))
+        catch (Exception e)
         {
-            return false;
+            _logger.LogError(e, "Error checking for downgrade");
+            return true;
         }
-
-        if (newIndirectDependenciesOfThisPackage.Any(x => x.VersionRange?.MinVersion?.Version 
-                                                          >= versionRemoved?.ToVersion()))
-        {
-            return false;
-        }
-
-        return true;
     }
 }
