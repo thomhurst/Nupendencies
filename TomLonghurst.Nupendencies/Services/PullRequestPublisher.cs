@@ -141,7 +141,7 @@ public class PullRequestPublisher : IPullRequestPublisher
             stringBuilder.AppendLine($"{dependencyRemovalResults.Count} ␡ | ");
             foreach (var dependencyRemovalResult in dependencyRemovalResults.OrderBy(x => x.PackageName))
             {
-                stringBuilder.AppendLine($" - {dependencyRemovalResult.PackageName} > {dependencyRemovalResult.Package.Project.Name}");
+                stringBuilder.AppendLine($" - {dependencyRemovalResult.PackageName} from {dependencyRemovalResult.Package.Project.Name}");
             }
             stringBuilder.AppendLine();
         }
