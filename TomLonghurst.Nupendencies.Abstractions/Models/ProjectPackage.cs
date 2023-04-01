@@ -37,8 +37,23 @@ public record ProjectPackage
     public ProjectItemElement PackageReferenceTag { get; }
     public ProjectMetadataElement XmlVersionTag { get; }
 
-    public bool IsConditional => !string.IsNullOrWhiteSpace(PackageReferenceTag.Condition)
-                                 || !string.IsNullOrWhiteSpace(PackageReferenceTag.Parent.Condition);
+    public bool IsConditional
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(PackageReferenceTag.Condition))
+            {
+                return true;
+            }
+
+            if (PackageReferenceTag.Parent == null)
+            {
+                return false;
+            }
+            
+            return !string.IsNullOrWhiteSpace(PackageReferenceTag.Parent.Condition);
+        }
+    }
 
     public void RollbackVersion()
     {
