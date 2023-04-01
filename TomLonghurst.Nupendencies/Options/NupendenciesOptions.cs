@@ -2,7 +2,7 @@
 
 namespace TomLonghurst.Nupendencies.Options;
 
-public class NupendenciesOptions
+public record NupendenciesOptions
 {
     public required bool TryRemoveUnusedPackages { get; init; }
 

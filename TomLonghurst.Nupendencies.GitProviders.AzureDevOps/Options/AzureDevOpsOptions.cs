@@ -1,6 +1,6 @@
 ﻿namespace TomLonghurst.Nupendencies.GitProviders.AzureDevOps.Options;
 
-public class AzureDevOpsOptions
+public record AzureDevOpsOptions
 {
     public required string AuthenticationUsername { get; set; }
     public required string AuthenticationPatToken { get; set; }
