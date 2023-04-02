@@ -118,7 +118,7 @@ public class DependencyUpdater : IDependencyUpdater
                 p.CurrentVersion = SemVersion.Parse(updateablePackage.NuGetPackageInformation.Version.ToNormalizedString(), SemVersionStyles.Any));
         }
 
-        var buildResult = await _solutionBuilder.BuildProjects(packagesGrouped.SelectMany(x => x).GetProjectsToBuild());
+        var buildResult = await _solutionBuilder.BuildProjects(packagesGrouped.SelectMany(x => x).GetProjectsToBuild(), false);
 
         if (!buildResult.IsSuccessful)
         {
@@ -196,7 +196,7 @@ public class DependencyUpdater : IDependencyUpdater
 
         packagesNeedingUpdating.ForEach(p => p.CurrentVersion = SemVersion.Parse(latestVersion, SemVersionStyles.Any));
 
-        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
+        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild, false);
 
         var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
 

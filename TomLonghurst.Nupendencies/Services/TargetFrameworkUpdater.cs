@@ -39,7 +39,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
 
         var projectsToBuild = netCoreProjects.SelectMany(x => x.Repository.AllProjects).GetProjectsToBuild();
 
-        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild);
+        var solutionBuildResult = await _solutionBuilder.BuildProjects(projectsToBuild, false);
     
         var solutionBuiltSuccessfully = solutionBuildResult.IsSuccessful;
 

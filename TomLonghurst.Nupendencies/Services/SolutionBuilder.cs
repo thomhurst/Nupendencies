@@ -28,10 +28,10 @@ public class SolutionBuilder : ISolutionBuilder
             .ToList()));
     }
     
-    public async Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, string target = "build")
+    public async Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, bool forceRebuild)
     {
         var projectsToBuild = projects.Where(p => p.IsBuildable).Distinct().ToImmutableHashSet();
-        var results = await Build(projectsToBuild, target);
+        var results = await Build(projectsToBuild, forceRebuild);
 
         var isSuccessful = CheckIsSuccessful(results);
 
@@ -56,7 +56,7 @@ public class SolutionBuilder : ISolutionBuilder
         return results.All(rw => rw.ExitCode == 0);
     }
     
-    private async Task<IList<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, string target = "build")
+    private async Task<IList<ProjectBuildResult>> Build(ImmutableHashSet<Project> projectsToBuild, bool forceRebuild)
     {
         var results = new List<ProjectBuildResult>();
 
@@ -70,11 +70,11 @@ public class SolutionBuilder : ISolutionBuilder
 
             if (ShouldBuildUsingLegacyMsBuild(projectToBuild))
             {
-                results.Add(await BuildUsingLegacyMsBuild(projectToBuild, target));
+                results.Add(await BuildUsingLegacyMsBuild(projectToBuild, forceRebuild ? "Rebuild" : "Build"));
             }
             else
             {
-                results.Add(await BuildUsingDotnet(projectToBuild, target));
+                results.Add(await BuildUsingDotnet(projectToBuild, forceRebuild ? "--no-incremental" : ""));
             }
         }
 
@@ -99,7 +99,7 @@ public class SolutionBuilder : ISolutionBuilder
         return childProjects.Any(cp => ShouldBuildUsingLegacyMsBuild(cp.Project));
     }
 
-    private async Task<ProjectBuildResult> BuildUsingDotnet(Project projectToBuild, string target = "build")
+    private async Task<ProjectBuildResult> BuildUsingDotnet(Project projectToBuild, string additionalArguments = "")
     {
         var sdk = await _netSdkProvider.GetLatestDotnetSdk();
 
@@ -123,7 +123,7 @@ public class SolutionBuilder : ISolutionBuilder
         
         var result = await Cli.Wrap("dotnet")
             .WithWorkingDirectory(sdk.Directory)
-            .WithArguments($"{target} \"{projectToBuild.ProjectPath}\" --configuration Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
+            .WithArguments($"build \"{projectToBuild.ProjectPath}\" --configuration Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
             .WithEnvironmentVariables(new Dictionary<string, string?>
             {
                 ["VSS_NUGET_EXTERNAL_FEED_ENDPOINTS"] = _azureArtifactsCredentialsJson,
@@ -142,7 +142,7 @@ public class SolutionBuilder : ISolutionBuilder
         };
     }
 
-    private async Task<ProjectBuildResult> BuildUsingLegacyMsBuild(Project projectToBuild, string target = "build")
+    private async Task<ProjectBuildResult> BuildUsingLegacyMsBuild(Project projectToBuild, string target)
     {
         var sdk = await _netSdkProvider.GetLatestMSBuild();
 

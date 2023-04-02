@@ -6,5 +6,5 @@ namespace TomLonghurst.Nupendencies.Contracts;
 
 public interface ISolutionBuilder
 {
-    Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, string target = "build");
+    Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, bool forceRebuild);
 }

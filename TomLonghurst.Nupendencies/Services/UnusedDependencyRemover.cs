@@ -79,7 +79,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
 
             var projectsToBuild = package.Project.Repository.AllProjects.GetProjectsToBuild();
 
-            var build = await _solutionBuilder.BuildProjects(projectsToBuild);
+            var build = await _solutionBuilder.BuildProjects(projectsToBuild, false);
 
             if (!build.IsSuccessful)
             {
@@ -118,7 +118,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
 
             var projectsToBuild = childProject.Project.Repository.AllProjects.GetProjectsToBuild();
 
-            var build = await _solutionBuilder.BuildProjects(projectsToBuild);
+            var build = await _solutionBuilder.BuildProjects(projectsToBuild, false);
 
             _logger.LogDebug("Build failure after removing project {Project}: {Output}", childProject.Project.Name, build.OutputString);
 

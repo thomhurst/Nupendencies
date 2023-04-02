@@ -65,8 +65,7 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
         // One last build in-case we need to generate binding redirects etc
         var upperMostProjects = codeRepository.AllProjects.GetProjectsToBuild();
         
-        await _solutionBuilder.BuildProjects(upperMostProjects, "clean");
-        await _solutionBuilder.BuildProjects(upperMostProjects);
+        await _solutionBuilder.BuildProjects(upperMostProjects, true);
     }
 
     private void TryRegenerateBindings(string webConfigFile)

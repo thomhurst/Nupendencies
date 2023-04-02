@@ -36,6 +36,7 @@ public record ChildProject
         _tagNextSibling = ProjectReferenceTag.NextSibling;
         
         ProjectReferenceTag.Parent?.RemoveChild(ProjectReferenceTag);
+        ParentProject.Save();
     }
     
     public void UndoRemove()
@@ -67,7 +68,7 @@ public record ChildProject
             _tagParent?.AppendChild(ProjectReferenceTag);
         }
         
-        Project.Save();
+        ParentProject.Save();
     }
 
     public virtual bool Equals(ChildProject? other)
