@@ -86,6 +86,8 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
                 UndoPackageRemoval(package);
                 continue;
             }
+            
+            package.Tidy();
 
             _logger.LogInformation("Package {PackageName} was successfully removed from Project {ProjectPath}",
                 name, projectPath);
@@ -107,8 +109,6 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
                      .SelectMany(p => p.Children)
                 )
         {
-            var name = childProject.Project.Name;
-           
             if (childProject.IsConditional)
             {
                 continue;
@@ -127,6 +127,8 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
                 UndoProjectReferenceRemoval(childProject);
                 continue;
             }
+            
+            childProject.Tidy();
 
             _logger.LogInformation("Project {ProjectName} was successfully removed from Project {ContaingProjectName}",
                 childProject.Project.Name, childProject.ParentProject.Name);

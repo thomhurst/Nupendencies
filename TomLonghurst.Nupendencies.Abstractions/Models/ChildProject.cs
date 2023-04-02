@@ -70,6 +70,15 @@ public record ChildProject
         
         ParentProject.Save();
     }
+    
+    public void Tidy()
+    {
+        if (_tagParent?.Children.Any() == false)
+        {
+            _tagParent.Parent.RemoveChild(_tagParent);
+            Project.Save();
+        }
+    }
 
     public virtual bool Equals(ChildProject? other)
     {
