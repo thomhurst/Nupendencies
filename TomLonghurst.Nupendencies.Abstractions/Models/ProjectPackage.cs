@@ -100,7 +100,7 @@ public record ProjectPackage
 
     public void Tidy()
     {
-        if (!_tagParent.Children.Any())
+        if (_tagParent?.Children.Any() == false)
         {
             _tagParent.Parent.RemoveChild(_tagParent);
             Project.Save();
