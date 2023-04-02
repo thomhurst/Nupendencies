@@ -6,6 +6,7 @@ Automated NuGet Dependency Updater
 - It will clone each repository to the local machine
 - It will build a Project tree, and detect all TargetFramework + PackageReference elements within your csproj files
 - It will attempt to update the TargetFramework (if you are below the latest known version by this tool) and then build your project, rolling back if it breaks compilation
+- (Optional by configuration) It will attempt to delete ProjectReferences to de-clutter csproj files where they're redundant (because they're unused or pulled in from other projects), rolling back if it breaks compilation
 - (Optional by configuration) It will attempt to delete PackageReferences to de-clutter csproj files where they're redundant (because they're unused or pulled in from other projects/packages), rolling back if it breaks compilation or detects an overall downgrade to that package throughout the project tree
 - It will attempt to upgrade PackageReferences with the latest stable version from NuGet, rolling back if it breaks compilation
 - It will raise issues (Currently only on GitHub) for any packages that it couldn't update automatically
@@ -47,7 +48,8 @@ var host = Host.CreateDefaultBuilder()
             {
                 CommitterEmail = "myemail@example.com",
                 CommitterName = "Tom Longhurst",
-                TryRemoveUnusedPackages = true
+                TryRemoveUnusedPackages = true,  // Remove redundant PackageReference tags - Redundant if code is unused or they're pulled in transitively from other projects
+                TryRemoveUnusedProjects = true // Remove redundant ProjectReference tags - Redundant if code is unused or they're pulled in transitively from other projects
             })
             .AddGitHubProvider(new GitHubOptions
             {
@@ -62,7 +64,7 @@ var host = Host.CreateDefaultBuilder()
                 
                 AuthenticationPatToken = "my-pat",
                 AuthenticationUsername = "myemail@example.com",
-                WorkItemIds = new[] {
+                WorkItemIdsToAttachToPullRequests = new[] {
                 "12345" // User Story to automatically attach to created PRs
                 }
             });
