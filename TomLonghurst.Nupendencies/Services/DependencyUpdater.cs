@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging.Core;
 using Semver;
 using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
@@ -45,9 +46,10 @@ public class DependencyUpdater : IDependencyUpdater
 
         _logger.LogInformation("Build errors - Falling back to updating packages one by one");
 
+        var allNugetDependencies = nugetDependencyDetails.SelectMany(d => d.Dependencies).ToList();
         foreach (var nuGetPackageInformation in nugetDependencyDetails
                      .Where(x => x?.PackageName != null)
-                     .OrderBy(x => x.PackageName))
+                     .OrderBy(npi => GetEfficientOrder(npi, allNugetDependencies)))
         {
             var tagsWithThisNugetPackage =
                 packagesGrouped.FirstOrDefault(x => x.Key == nuGetPackageInformation.PackageName);
@@ -86,6 +88,24 @@ public class DependencyUpdater : IDependencyUpdater
         } while (successCount > 0);
 
         return results;
+    }
+
+    private int GetEfficientOrder(NuGetPackageInformation nuGetPackageInformation,
+        IEnumerable<PackageDependency> allNugetDependencies)
+    {
+        // Some packages containing references to other packages can't be updated first until the nested package has been updated, to avoid version downgrades
+        // We should try to update dependencies first where they don't appear to depend on another
+        if (!nuGetPackageInformation.Dependencies.Any())
+        {
+            return 0;
+        }
+
+        if (allNugetDependencies.Any(d => d.Id == nuGetPackageInformation.PackageName))
+        {
+            return 1;
+        }
+
+        return nuGetPackageInformation.Dependencies.Count;
     }
 
     private async Task<IList<PackageUpdateResult>> TryUpdateAllPackagesSimultaneously(List<IGrouping<string, ProjectPackage>> packagesGrouped, NuGetPackageInformation[] nugetDependencyDetails)
