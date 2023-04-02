@@ -26,17 +26,17 @@ public class PullRequestPublisher : IPullRequestPublisher
     {
         var gitProvider = gitRepository.Provider;
         
-        var packageUpdateResults = updateReport.UpdatedPackagesResults;
-        var packageRemovalResults = updateReport.UnusedRemovedPackageReferencesResults;
-        var projectRemovalResults = updateReport.UnusedRemovedProjectReferencesResults;
+        var packageUpdateResults = updateReport.UpdatedPackagesResults.Where(r => r.UpdateBuiltSuccessfully).ToList();
+        var packageRemovalResults = updateReport.UnusedRemovedPackageReferencesResults.Where(r => r.IsSuccessful).ToList();
+        var projectRemovalResults = updateReport.UnusedRemovedProjectReferencesResults.Where(r => r.IsSuccessful).ToList();
         
-        var successfulPackageUpdates = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully);
-        var successfulUnusedPackageRemovals = packageRemovalResults.Count(r => r.IsSuccessful);
-        var successfulUnusedProjectRemovals = projectRemovalResults.Count(r => r.IsSuccessful);
+        var successfulPackageUpdates = packageUpdateResults.Count;
+        var successfulUnusedPackageRemovals = packageRemovalResults.Count;
+        var successfulUnusedProjectRemovals = projectRemovalResults.Count;
 
         if (successfulPackageUpdates == 0
             && successfulUnusedPackageRemovals == 0
-            && updateReport.UnusedRemovedProjectReferencesResults.Count == 0
+            && successfulUnusedProjectRemovals == 0
             && !updateReport.TargetFrameworkUpdateResult.IsSuccessful)
         {
             return;
