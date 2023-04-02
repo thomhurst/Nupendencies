@@ -72,6 +72,28 @@ var host = Host.CreateDefaultBuilder()
 await host.Services.GetRequiredService<INupendencyUpdater>().Start();
 ```
 
+## Private NuGet Feeds
+Nupendencies supports private NuGet feeds, allowing you to still check for updates for private packages.
+The NupendenciesOptions object can take an array of Private NuGet Feed options, where you provide a URL, a source nickname (as you would in your NuGet config file), your authentication username, your authentication PAT
+
+```csharp
+var nupendenciesOptions = new NupendenciesOptions()
+        {
+            // ...
+            PrivateNugetFeedOptions =
+            {
+                new PrivateNugetFeedOptions()
+                {
+                    Username = "myemail@example.com",
+                    PatToken = "mypat",
+                    SourceName = "MyPrivateFeed",
+                    SourceUrl = "https://example.com/_packaging/MyPrivateFeed/nuget/v3/index.json"
+                }
+            }
+            // ...
+        }
+```
+
 ## Things to consider
 Since this builds projects over and over to check packages don't break compilation, it can be slow to run, especially if you have a very large project with many package references / nested projects.
 You may want to run this on a fast machine to decrease project build times
