@@ -27,22 +27,27 @@ public class PullRequestPublisher : IPullRequestPublisher
         var gitProvider = gitRepository.Provider;
         
         var packageUpdateResults = updateReport.UpdatedPackagesResults;
-        var deletionUpdateResults = updateReport.UnusedRemovedPackageReferencesResults;
+        var packageRemovalResults = updateReport.UnusedRemovedPackageReferencesResults;
+        var projectRemovalResults = updateReport.UnusedRemovedProjectReferencesResults;
         
         var successfulPackageUpdates = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully);
-        var successfulUnusedPackageRemovals = deletionUpdateResults.Count(r => r.IsSuccessful);
-        
+        var successfulUnusedPackageRemovals = packageRemovalResults.Count(r => r.IsSuccessful);
+        var successfulUnusedProjectRemovals = projectRemovalResults.Count(r => r.IsSuccessful);
+
         if (successfulPackageUpdates == 0
             && successfulUnusedPackageRemovals == 0
+            && updateReport.UnusedRemovedProjectReferencesResults.Count == 0
             && !updateReport.TargetFrameworkUpdateResult.IsSuccessful)
         {
             return;
         }
 
         var existingOpenPrs = (await gitProvider.GetOpenPullRequests(gitRepository)).ToList();
-        var prBody = GenerateBody(packageUpdateResults, deletionUpdateResults, updateReport.UnusedRemovedProjectReferencesResults, updateReport.TargetFrameworkUpdateResult);
 
-        var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
+        var prTitle = GenerateTitle(successfulPackageUpdates, successfulUnusedPackageRemovals, successfulUnusedProjectRemovals, updateReport.TargetFrameworkUpdateResult);
+        var prBody = GenerateBody(packageUpdateResults, packageRemovalResults, projectRemovalResults, updateReport.TargetFrameworkUpdateResult);
+
+        var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prTitle, prBody);
         if (matchingPrWithSamePackageUpdates is { HasConflicts: false })
         {
             // There is an open PR identical to this one. Do nothing.
@@ -74,24 +79,23 @@ public class PullRequestPublisher : IPullRequestPublisher
             {
                 UpdateReport = updateReport,
                 Repository = gitRepository,
-                Title = GenerateTitle(successfulPackageUpdates, successfulUnusedPackageRemovals, updateReport.UnusedRemovedProjectReferencesResults, updateReport.TargetFrameworkUpdateResult),
+                Title = prTitle,
                 Body = prBody,
                 BaseBranch = gitRepository.MainBranch,
                 HeadBranch = GetBranchName(branchName)
             });
     }
 
-    private static GitPullRequest? MatchingPrWithSamePackageUpdates(GitRepository gitRepository, IEnumerable<GitPullRequest> existingOpenPrs, string prBody)
+    private static GitPullRequest? MatchingPrWithSamePackageUpdates(GitRepository gitRepository, IEnumerable<GitPullRequest> existingOpenPrs, string prTitle, string prBody)
     {
-        return existingOpenPrs.FirstOrDefault(pr => pr.Body == prBody.Truncate(gitRepository.Provider.PullRequestBodyCharacterLimit));
+        return existingOpenPrs.FirstOrDefault(pr => pr.Title == prTitle && pr.Body == prBody.Truncate(gitRepository.Provider.PullRequestBodyCharacterLimit));
     }
 
-    private string GenerateTitle(int updateCount, int successfulUnusedPackageRemovals,
-        IList<ProjectRemovalResult> successfullyUnusedProjectReferencesRemovals,
+    private string GenerateTitle(int updateCount, 
+        int successfulUnusedPackageRemovals,
+        int successfullyUnusedProjectReferencesRemovals,
         TargetFrameworkUpdateResult targetFrameworkUpdateResult)
     {
-        var dateTime = DateTime.Now;
-
         var stringBuilder = new StringBuilder();
 
         if (targetFrameworkUpdateResult.IsSuccessful)
@@ -104,12 +108,12 @@ public class PullRequestPublisher : IPullRequestPublisher
             stringBuilder.Append($"{updateCount} ↑ | ");
         }
         
-        if (successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals.Count > 0)
+        if (successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals > 0)
         {
-            stringBuilder.Append($"{successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals.Count} ␡ | ");
+            stringBuilder.Append($"{successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals} ␡ | ");
         }
         
-        return stringBuilder.Append($"{dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}").ToString();
+        return stringBuilder.Append(NupendencyPrTitleSuffix).ToString();
     }
 
     private string GenerateBody(ICollection<PackageUpdateResult> packageUpdateResults,
