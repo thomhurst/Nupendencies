@@ -27,7 +27,7 @@ public class PullRequestPublisher : IPullRequestPublisher
         var gitProvider = gitRepository.Provider;
         
         var packageUpdateResults = updateReport.UpdatedPackagesResults;
-        var deletionUpdateResults = updateReport.UnusedRemovedPackagesResults;
+        var deletionUpdateResults = updateReport.UnusedRemovedPackageReferencesResults;
         
         var successfulPackageUpdates = packageUpdateResults.Count(r => r.UpdateBuiltSuccessfully);
         var successfulUnusedPackageRemovals = deletionUpdateResults.Count(r => r.IsSuccessful);
@@ -40,7 +40,7 @@ public class PullRequestPublisher : IPullRequestPublisher
         }
 
         var existingOpenPrs = (await gitProvider.GetOpenPullRequests(gitRepository)).ToList();
-        var prBody = GenerateBody(packageUpdateResults, deletionUpdateResults, updateReport.TargetFrameworkUpdateResult);
+        var prBody = GenerateBody(packageUpdateResults, deletionUpdateResults, updateReport.UnusedRemovedProjectReferencesResults, updateReport.TargetFrameworkUpdateResult);
 
         var matchingPrWithSamePackageUpdates = MatchingPrWithSamePackageUpdates(gitRepository, existingOpenPrs, prBody);
         if (matchingPrWithSamePackageUpdates is { HasConflicts: false })
@@ -74,7 +74,7 @@ public class PullRequestPublisher : IPullRequestPublisher
             {
                 UpdateReport = updateReport,
                 Repository = gitRepository,
-                Title = GenerateTitle(successfulPackageUpdates, successfulUnusedPackageRemovals, updateReport.TargetFrameworkUpdateResult),
+                Title = GenerateTitle(successfulPackageUpdates, successfulUnusedPackageRemovals, updateReport.UnusedRemovedProjectReferencesResults, updateReport.TargetFrameworkUpdateResult),
                 Body = prBody,
                 BaseBranch = gitRepository.MainBranch,
                 HeadBranch = GetBranchName(branchName)
@@ -87,6 +87,7 @@ public class PullRequestPublisher : IPullRequestPublisher
     }
 
     private string GenerateTitle(int updateCount, int successfulUnusedPackageRemovals,
+        IList<ProjectRemovalResult> successfullyUnusedProjectReferencesRemovals,
         TargetFrameworkUpdateResult targetFrameworkUpdateResult)
     {
         var dateTime = DateTime.Now;
@@ -103,16 +104,17 @@ public class PullRequestPublisher : IPullRequestPublisher
             stringBuilder.Append($"{updateCount} ↑ | ");
         }
         
-        if (successfulUnusedPackageRemovals > 0)
+        if (successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals.Count > 0)
         {
-            stringBuilder.Append($"{successfulUnusedPackageRemovals} ␡ | ");
+            stringBuilder.Append($"{successfulUnusedPackageRemovals + successfullyUnusedProjectReferencesRemovals.Count} ␡ | ");
         }
         
         return stringBuilder.Append($"{dateTime.ToShortDateString()} {dateTime.ToShortTimeString()} {NupendencyPrTitleSuffix}").ToString();
     }
 
     private string GenerateBody(ICollection<PackageUpdateResult> packageUpdateResults,
-        ICollection<DependencyRemovalResult> dependencyRemovalResults,
+        ICollection<PackageRemovalResult> packageRemovalResults,
+        ICollection<ProjectRemovalResult> projectRemovalResults,
         TargetFrameworkUpdateResult targetFrameworkUpdateResult)
     {
         var stringBuilder = new StringBuilder();
@@ -134,15 +136,19 @@ public class PullRequestPublisher : IPullRequestPublisher
             stringBuilder.AppendLine();
         }
 
-        
-        
-        if (dependencyRemovalResults.Any())
+        if (packageRemovalResults.Any() || projectRemovalResults.Any())
         {
-            stringBuilder.AppendLine($"{dependencyRemovalResults.Count} ␡ | ");
-            foreach (var dependencyRemovalResult in dependencyRemovalResults.OrderBy(x => x.PackageName))
+            stringBuilder.AppendLine($"{packageRemovalResults.Count + projectRemovalResults.Count} ␡ | ");
+            foreach (var packageRemovalResult in packageRemovalResults.OrderBy(x => x.PackageName))
             {
-                stringBuilder.AppendLine($" - {dependencyRemovalResult.PackageName} from {dependencyRemovalResult.Package.Project.Name}");
+                stringBuilder.AppendLine($" - {packageRemovalResult.PackageName} from {packageRemovalResult.Package.Project.Name}");
             }
+            
+            foreach (var projectRemovalResult in projectRemovalResults.OrderBy(x => x.ProjectName))
+            {
+                stringBuilder.AppendLine($" - {projectRemovalResult.ProjectName} from {projectRemovalResult.ProjectRemovedFrom.Name}");
+            }
+            
             stringBuilder.AppendLine();
         }
 

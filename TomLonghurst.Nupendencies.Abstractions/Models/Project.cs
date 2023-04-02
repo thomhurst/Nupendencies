@@ -14,7 +14,7 @@ public record Project
     public string Directory { get; }
     public HashSet<Project> DirectoryBuildProps { get; } = new();
     public HashSet<Project> Parents { get; } = new();
-    public ImmutableHashSet<Project> Children { get; }
+    public ImmutableHashSet<ChildProject> Children { get; }
     public ImmutableHashSet<ProjectPackage> Packages { get; }
     public HashSet<Solution> Solutions { get; } = new();
     public ProjectRootElement ProjectRootElement { get; }
@@ -164,23 +164,33 @@ public record Project
         }
     }
 
-    private ImmutableHashSet<Project> ParseChildren(ProjectRootElement projectRootElement)
+    private ImmutableHashSet<ChildProject> ParseChildren(ProjectRootElement projectRootElement)
     {
         var children = projectRootElement.Items
             .Where(i => i.ItemType == "ProjectReference")
-            .Select(x => x.Include)
-            .Select(GetFullPath)
-            .Where(File.Exists)
-            .Where(path => path != ProjectPath)
-            .Distinct()
-            .Select(path => Repository.GetProject(path) ?? new Project(Repository, Solutions, path))
+            .Where(projectReference => File.Exists(GetFullPath(projectReference.Include)))
+            .Where(projectReference => GetFullPath(projectReference.Include) != ProjectPath)
+            .DistinctBy(projectReference => GetFullPath(projectReference.Include))
+            .Select(projectReference =>
+            {
+                var path = GetFullPath(projectReference.Include);
+
+                var project = Repository.GetProject(path) ?? new Project(Repository, Solutions, path);
+                
+                return new ChildProject
+                {
+                    ParentProject = this,
+                    Project = project,
+                    ProjectReferenceTag = projectReference
+                };
+            })
             .ToList();
 
         foreach (var child in children)
         {
-            child.Solutions.AddRange(Solutions);
-            child.Solutions.ForEach(s => s.Projects.Add(child));
-            child.Parents.Add(this);
+            child.Project.Solutions.AddRange(Solutions);
+            child.Project.Solutions.ForEach(s => s.Projects.Add(child.Project));
+            child.Project.Parents.Add(this);
         }
 
         return children.ToImmutableHashSet();

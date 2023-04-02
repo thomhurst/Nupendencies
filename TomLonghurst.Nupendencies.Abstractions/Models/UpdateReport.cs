@@ -2,6 +2,7 @@
 
 public record UpdateReport(
     TargetFrameworkUpdateResult TargetFrameworkUpdateResult,
-    IList<DependencyRemovalResult> UnusedRemovedPackagesResults,
+    IList<PackageRemovalResult> UnusedRemovedPackageReferencesResults,
+    IList<ProjectRemovalResult> UnusedRemovedProjectReferencesResults,
     IList<PackageUpdateResult> UpdatedPackagesResults
 );

@@ -88,6 +88,6 @@ public record CodeRepository
     {
         builder.AppendLine($"{new string('\t', indentLevel)}- Project: " + project.Name);
         
-        project.Children.ForEach(child => PrintProject(indentLevel+1, builder, child));
+        project.Children.ForEach(child => PrintProject(indentLevel+1, builder, child.Project));
     }
 }

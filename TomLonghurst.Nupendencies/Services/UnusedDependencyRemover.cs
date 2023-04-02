@@ -46,7 +46,7 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
         _nupendenciesOptions = nupendenciesOptions;
     }
 
-    public async IAsyncEnumerable<DependencyRemovalResult> TryDeleteUnusedPackages(CodeRepository repository)
+    public async IAsyncEnumerable<PackageRemovalResult> TryDeleteRedundantPackageReferences(CodeRepository repository)
     {
         if (!_nupendenciesOptions.TryRemoveUnusedPackages)
         {
@@ -90,7 +90,46 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
             _logger.LogInformation("Package {PackageName} was successfully removed from Project {ProjectPath}",
                 name, projectPath);
 
-            yield return new DependencyRemovalResult(true, name, package);
+            yield return new PackageRemovalResult(true, name, package);
+        }
+    }
+    
+    public async IAsyncEnumerable<ProjectRemovalResult> TryDeleteRedundantProjectReferences(CodeRepository repository)
+    {
+        if (!_nupendenciesOptions.TryRemoveUnusedProjects)
+        {
+            yield break;
+        }
+        
+        var allProjects = repository.AllProjects;
+
+        foreach (var childProject in allProjects
+                     .SelectMany(p => p.Children)
+                )
+        {
+            var name = childProject.Project.Name;
+           
+            if (childProject.IsConditional)
+            {
+                continue;
+            }
+
+            childProject.RemoveReferenceTag();
+
+            var projectsToBuild = childProject.Project.Repository.AllProjects.GetProjectsToBuild();
+
+            var build = await _solutionBuilder.BuildProjects(projectsToBuild);
+
+            if (!build.IsSuccessful)
+            {
+                UndoProjectReferenceRemoval(childProject);
+                continue;
+            }
+
+            _logger.LogInformation("Project {ProjectName} was successfully removed from Project {ContaingProjectName}",
+                childProject.Project.Name, childProject.ParentProject.Name);
+
+            yield return new ProjectRemovalResult(true, childProject.Project.Name, childProject.ParentProject);
         }
     }
 
@@ -100,5 +139,13 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
             package.Name, package.Project.Name);
         
         package.UndoRemove();
+    }
+    
+    private void UndoProjectReferenceRemoval(ChildProject childProject)
+    {
+        _logger.LogDebug("Package {ProjectName} could not be removed from Project {ContainingProjectName}",
+            childProject.Project.Name, childProject.ParentProject.Name);
+        
+        childProject.UndoRemove();
     }
 }

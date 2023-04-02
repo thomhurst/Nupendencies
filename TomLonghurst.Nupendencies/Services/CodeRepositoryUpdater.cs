@@ -37,7 +37,9 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
         var targetFrameworkUpdateResult = await _targetFrameworkUpdater.TryUpdateTargetFramework(repository);
         
-        var deletionResults = await _unusedDependencyRemover.TryDeleteUnusedPackages(repository).ToListAsync();
+        var removedProjectRemovalResults = await _unusedDependencyRemover.TryDeleteRedundantProjectReferences(repository).ToListAsync();
+
+        var removedPackageReferencesResults = await _unusedDependencyRemover.TryDeleteRedundantPackageReferences(repository).ToListAsync();
         
         var updateResults = await _dependencyUpdater.TryUpdatePackages(repository);
 
@@ -45,7 +47,8 @@ public class CodeRepositoryUpdater : ICodeRepositoryUpdater
 
         return new UpdateReport(
             targetFrameworkUpdateResult,
-            deletionResults,
+            removedPackageReferencesResults,
+            removedProjectRemovalResults,
             updateResults
         );
     }

@@ -5,16 +5,9 @@ namespace TomLonghurst.Nupendencies.Abstractions.Models;
 
 public record ProjectPackage
 {
-    private readonly ProjectElementContainer _parent;
-    private readonly ProjectElement _lastSibling;
-    private readonly ProjectElement _nextSibling;
-    
     public ProjectPackage(ProjectItemElement packageReferenceTag)
     {
         PackageReferenceTag = packageReferenceTag;
-        _parent = packageReferenceTag.Parent;
-        _lastSibling = packageReferenceTag.PreviousSibling;
-        _nextSibling = packageReferenceTag.NextSibling;
         XmlVersionTag = packageReferenceTag.Metadata.First(m => m.Name == "Version");
     }
     public required string Name { get; init; }
@@ -60,39 +53,46 @@ public record ProjectPackage
         CurrentVersion = OriginalVersion;
     }
 
+    private ProjectElementContainer? _tagParent;
+    private ProjectElement? _tagLastSibling;
+    private ProjectElement? _tagNextSibling;
     public void Remove()
     {
-        _parent.RemoveChild(PackageReferenceTag);
+        _tagParent = PackageReferenceTag.Parent;
+        _tagLastSibling = PackageReferenceTag.PreviousSibling;
+        _tagNextSibling = PackageReferenceTag.NextSibling;
+        
+        _tagParent?.RemoveChild(PackageReferenceTag);
         Project.Save();
     }
 
     public void UndoRemove()
     {
-        if (_lastSibling != null)
+        if (_tagLastSibling != null)
         {
             try
             {
-                _parent.InsertAfterChild(PackageReferenceTag, _lastSibling);
+                _tagParent?.InsertAfterChild(PackageReferenceTag, _tagLastSibling);
             }
             catch
             {
-                _parent.AppendChild(PackageReferenceTag);
+                _tagParent?.AppendChild(PackageReferenceTag);
             }
         }
-        else if (_nextSibling != null)
+        else if (_tagNextSibling != null)
         {
             try
             {
-                _parent.InsertBeforeChild(PackageReferenceTag, _nextSibling);
+                _tagParent?.InsertBeforeChild(PackageReferenceTag, _tagNextSibling);
             }
             catch
             {
-                _parent.AppendChild(PackageReferenceTag);
+                _tagParent?.AppendChild(PackageReferenceTag);
             }
         }
         else
         {
-            _parent.AppendChild(PackageReferenceTag);
+            _tagParent?.AppendChild(PackageReferenceTag);
         }
         
         Project.Save();
@@ -100,9 +100,9 @@ public record ProjectPackage
 
     public void Tidy()
     {
-        if (!_parent.Children.Any())
+        if (!_tagParent.Children.Any())
         {
-            _parent.Parent.RemoveChild(_parent);
+            _tagParent.Parent.RemoveChild(_tagParent);
             Project.Save();
         }
     }

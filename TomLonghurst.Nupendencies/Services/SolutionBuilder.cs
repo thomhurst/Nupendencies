@@ -94,7 +94,7 @@ public class SolutionBuilder : ISolutionBuilder
 
         var childProjects = projectToBuild.Children;
 
-        return childProjects.Any(ShouldBuildUsingLegacyMsBuild);
+        return childProjects.Any(cp => ShouldBuildUsingLegacyMsBuild(cp.Project));
     }
 
     private async Task<ProjectBuildResult> BuildUsingDotnet(Project projectToBuild, string target = "build")
