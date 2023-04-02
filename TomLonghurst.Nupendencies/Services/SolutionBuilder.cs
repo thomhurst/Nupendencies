@@ -30,7 +30,8 @@ public class SolutionBuilder : ISolutionBuilder
     
     public async Task<SolutionBuildResult> BuildProjects(ImmutableHashSet<Project> projects, string target = "build")
     {
-        var results = await Build(projects, target);
+        var projectsToBuild = projects.Where(p => p.IsBuildable).Distinct().ToImmutableHashSet();
+        var results = await Build(projectsToBuild, target);
 
         var isSuccessful = CheckIsSuccessful(results);
 
@@ -45,7 +46,8 @@ public class SolutionBuilder : ISolutionBuilder
         return new SolutionBuildResult
         {
             IsSuccessful = isSuccessful,
-            OutputErrors = results.Select(x => x.Output).ToList()
+            OutputErrors = results.Select(x => x.Output).ToList(),
+            BuiltProjects = projectsToBuild
         };
     }
 
@@ -58,7 +60,7 @@ public class SolutionBuilder : ISolutionBuilder
     {
         var results = new List<ProjectBuildResult>();
 
-        foreach (var projectToBuild in projectsToBuild.Where(p => p.IsBuildable).Distinct())
+        foreach (var projectToBuild in projectsToBuild)
         {
             // Fail fast
             if (results.Any(x => x.ExitCode != 0))

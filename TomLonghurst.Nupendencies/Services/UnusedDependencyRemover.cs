@@ -120,6 +120,8 @@ public class UnusedDependencyRemover : IUnusedDependencyRemover
 
             var build = await _solutionBuilder.BuildProjects(projectsToBuild);
 
+            _logger.LogDebug("Build failure after removing project {Project}: {Output}", childProject.Project.Name, build.OutputString);
+
             if (!build.IsSuccessful)
             {
                 UndoProjectReferenceRemoval(childProject);
