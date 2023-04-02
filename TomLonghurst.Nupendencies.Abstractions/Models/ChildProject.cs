@@ -75,7 +75,7 @@ public record ChildProject
     {
         if (_tagParent?.Children.Any() == false)
         {
-            _tagParent.Parent.RemoveChild(_tagParent);
+            (_tagParent.Parent ?? ParentProject.ProjectRootElement).RemoveChild(_tagParent);
             Project.Save();
         }
     }

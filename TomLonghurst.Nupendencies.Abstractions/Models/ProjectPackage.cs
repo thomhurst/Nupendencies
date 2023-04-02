@@ -102,7 +102,7 @@ public record ProjectPackage
     {
         if (_tagParent?.Children.Any() == false)
         {
-            _tagParent.Parent.RemoveChild(_tagParent);
+            (_tagParent.Parent ?? Project.ProjectRootElement).RemoveChild(_tagParent);
             Project.Save();
         }
     }
