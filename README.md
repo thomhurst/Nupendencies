@@ -99,3 +99,7 @@ var nupendenciesOptions = new NupendenciesOptions()
 ## Things to consider
 Since this builds projects over and over to check packages don't break compilation, it can be slow to run, especially if you have a very large project with many package references / nested projects.
 You may want to run this on a fast machine to decrease project build times
+
+TryRemoveUnusedPackages and TryRemoveUnusedProjects options will slow down things drastically.
+They're good for cleaning up projects that have been changed a lot over a long time, as this can lead to lots of references being added and changed, and people not realising when to remove unused entries.
+If you want to clean up these, then be prepared for quite a lengthy job. If you run this tool regularly, I'd recommend just using these once in a blue moon, and for your regular runs, leaving them disabled to speed things up.
