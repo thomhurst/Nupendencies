@@ -6,6 +6,7 @@ using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
@@ -14,14 +15,17 @@ public class DependencyUpdater : IDependencyUpdater
     private readonly ILogger<DependencyUpdater> _logger;
     private readonly NuGetClient _nuGetClient;
     private readonly ISolutionBuilder _solutionBuilder;
+    private readonly NupendenciesOptions _nupendenciesOptions;
 
     public DependencyUpdater(ILogger<DependencyUpdater> logger,
         NuGetClient nuGetClient,
-        ISolutionBuilder solutionBuilder)
+        ISolutionBuilder solutionBuilder,
+        NupendenciesOptions nupendenciesOptions)
     {
         _logger = logger;
         _nuGetClient = nuGetClient;
         _solutionBuilder = solutionBuilder;
+        _nupendenciesOptions = nupendenciesOptions;
     }
 
     public async Task<IList<PackageUpdateResult>> TryUpdatePackages(CodeRepository codeRepository)
@@ -32,6 +36,7 @@ public class DependencyUpdater : IDependencyUpdater
 
         var packagesGrouped = allProjects
             .SelectMany(p => p.Packages)
+            .Where(ShouldUpdatePackage)
             .GroupBy(x => x.Name)
             .ToList();
 
@@ -88,6 +93,16 @@ public class DependencyUpdater : IDependencyUpdater
         } while (successCount > 0);
 
         return results;
+    }
+
+    private bool ShouldUpdatePackage(ProjectPackage package)
+    {
+        if (_nupendenciesOptions.PackagesToUpdate == null)
+        {
+            return true;
+        }
+
+        return _nupendenciesOptions.PackagesToUpdate.Invoke(package);
     }
 
     private int GetEfficientOrder(NuGetPackageInformation nuGetPackageInformation,

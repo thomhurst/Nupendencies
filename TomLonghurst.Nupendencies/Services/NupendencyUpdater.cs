@@ -66,11 +66,11 @@ public class NupendencyUpdater : INupendencyUpdater
 
     private bool ShouldScanRepository(GitRepository repository)
     {
-        if (!_nupendenciesOptions.RepositoriesToScan.Any())
+        if (_nupendenciesOptions.RepositoriesToScan == null)
         {
             return true;
         }
 
-        return _nupendenciesOptions.RepositoriesToScan.Any(func => func.Invoke(repository));
+        return _nupendenciesOptions.RepositoriesToScan.Invoke(repository);
     }
 }
