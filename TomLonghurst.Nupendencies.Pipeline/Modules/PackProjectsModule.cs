@@ -11,6 +11,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 [DependsOn<PackageFilesRemovalModule>]
 [DependsOn<NugetVersionGeneratorModule>]
+[DependsOn<BuildNetSdkLocatorExecutablesModule>]
 public class PackProjectsModule : Module<List<CommandResult>>
 {
     protected override async Task<ModuleResult<List<CommandResult>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)

@@ -18,7 +18,7 @@
   <ItemGroup>
     <Content Include="TomLonghurst.Nupendencies.NetSdkLocator.targets" PackagePath="build/TomLonghurst.Nupendencies.NetSdkLocator.targets" />
   </ItemGroup>
-  <Target Name="CopyBuildResult" AfterTargets="Build;Compile;Publish;Pack">
+  <Target Name="CopyBuildResult" AfterTargets="Build">
     <ItemGroup>
       <_CopyBuildResult Include="$(TargetDir)\*.dll;$(TargetDir)\*.exe;$(TargetDir)\*.json" />
     </ItemGroup>
