@@ -52,9 +52,14 @@ public class PackageVersionScanner : IPackageVersionScanner
                 return null;
             }
         
-            var result = await Cli.Wrap(Path.Combine(sdk.Directory, "MSBuild.exe"))
-                .WithWorkingDirectory(Path.GetDirectoryName(projectPath)!)
-                .WithArguments($"\"{Path.GetFileName(projectPath)}\" /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath={tempFile}")
+            var result = await Cli.Wrap("MSBuild.exe")
+                .WithWorkingDirectory(sdk.Directory) //Path.GetDirectoryName(projectPath)!)
+                .WithArguments(new []
+                {
+                    projectPath,
+                    "/t:GenerateRestoreGraphFile",
+                    "/p:RestoreGraphOutputPath={tempFile}"
+                })
                 .WithEnvironmentVariables(new Dictionary<string, string?>
                 {
                     ["VSS_NUGET_EXTERNAL_FEED_ENDPOINTS"] = _azureArtifactsCredentialsJson,
