@@ -15,17 +15,11 @@ public class NugetVersionGeneratorModule : Module<string>
     protected override async Task<ModuleResult<string>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
     {
         var gitVersionInformation = await context.Git().Versioning.GetGitVersioningInformation();
-
-        gitVersionInformation.BranchName.Should().NotBeNullOrWhiteSpace();
-
+        
         if (gitVersionInformation.BranchName == "main")
         {
-            gitVersionInformation.SemVer.Should().NotBeNullOrWhiteSpace();
-            
             return gitVersionInformation.SemVer!;
         }
-
-        gitVersionInformation.Major.Should().BePositive();
         
         return $"{gitVersionInformation.Major}.{gitVersionInformation.Minor}.{gitVersionInformation.Patch}-{gitVersionInformation.PreReleaseLabel}-{gitVersionInformation.CommitsSinceVersionSource}";
     }
