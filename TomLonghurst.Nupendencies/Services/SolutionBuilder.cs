@@ -129,7 +129,15 @@ public class SolutionBuilder : ISolutionBuilder
         
         var result = await Cli.Wrap("dotnet")
             .WithWorkingDirectory(sdk.Directory)
-            .WithArguments($"build \"{projectToBuild.ProjectPath}\" --configuration Release /p:WarningLevel=0 /p:CheckEolTargetFramework=false")
+            .WithArguments(new []
+                {
+                    "build",
+                    projectToBuild.ProjectPath,
+                    "--configuration",
+                    "Release",
+                    "/p:WarningLevel=0",
+                    "/p:CheckEolTargetFramework=false"
+                })
             .WithEnvironmentVariables(new Dictionary<string, string?>
             {
                 ["VSS_NUGET_EXTERNAL_FEED_ENDPOINTS"] = _azureArtifactsCredentialsJson,
