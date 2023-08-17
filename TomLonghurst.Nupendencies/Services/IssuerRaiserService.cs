@@ -2,21 +2,29 @@
 using TomLonghurst.Nupendencies.Abstractions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class IssuerRaiserService : IIssuerRaiserService
 {
     private readonly ILogger<IssuerRaiserService> _logger;
+    private readonly NupendenciesOptions _nupendenciesOptions;
     private const string NupendencyIssueTitleSuffix = "## Nupendencies Automated Issue ##";
 
-    public IssuerRaiserService(ILogger<IssuerRaiserService> logger)
+    public IssuerRaiserService(ILogger<IssuerRaiserService> logger, NupendenciesOptions nupendenciesOptions)
     {
         _logger = logger;
+        _nupendenciesOptions = nupendenciesOptions;
     }
 
     public async Task CreateIssues(UpdateReport updateReport, GitRepository gitRepository)
     {
+        if (!_nupendenciesOptions.RaiseIssuesForFailedUpdates)
+        {
+            return;
+        }
+        
         var gitProvider = gitRepository.Provider;
         
         var currentIssues = await gitProvider.GetOpenIssues(gitRepository);

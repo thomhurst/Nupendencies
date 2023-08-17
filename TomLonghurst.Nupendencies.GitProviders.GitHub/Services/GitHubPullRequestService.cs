@@ -1,5 +1,4 @@
-﻿using Octokit.GraphQL;
-using Octokit.GraphQL.Model;
+﻿using Octokit;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 
@@ -7,41 +6,45 @@ namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
 public class GitHubPullRequestService : IGitHubPullRequestService
 {
-    private readonly GitHubHttpClient _githubHttpClient;
-    private readonly IGitHubGraphQlClientProvider _gitHubGraphQlClientProvider;
+    private readonly IGitHubClientProvider _gitHubClientProvider;
 
-    public GitHubPullRequestService(GitHubHttpClient githubHttpClient,
-        IGitHubGraphQlClientProvider gitHubGraphQlClientProvider)
+    public GitHubPullRequestService(IGitHubClientProvider gitHubClientProvider)
     {
-        _githubHttpClient = githubHttpClient;
-        _gitHubGraphQlClientProvider = gitHubGraphQlClientProvider;
+        _gitHubClientProvider = gitHubClientProvider;
     }
 
     public async Task CreatePullRequest(CreatePullRequestModel createPullRequestModel)
     {
-        await _githubHttpClient.CreatePullRequest(createPullRequestModel.Repository.Owner, createPullRequestModel.Repository.Name, createPullRequestModel.Title, createPullRequestModel.Body, createPullRequestModel.HeadBranch, createPullRequestModel.BaseBranch);
+        await _gitHubClientProvider.GitHubClient.PullRequest.Create(long.Parse(createPullRequestModel.Repository.Id),
+            new NewPullRequest(createPullRequestModel.Title, createPullRequestModel.HeadBranch,
+                createPullRequestModel.BaseBranch)
+            {
+                Body = createPullRequestModel.Body
+            });
     }
 
     public async Task<IEnumerable<GitPullRequest>> GetOpenPullRequests(GitRepository repository)
     {
-        var query = new Query()
-            .Repository(repository.Name, repository.Owner, true)
-            .PullRequests(states: new List<PullRequestState> { PullRequestState.Open })
-            .AllPages()
-            .Select(p => new GitPullRequest
-            {
-                Number = p.Number,
-                Id = p.Id.Value,
-                Title = p.Title,
-                Body = p.Body,
-                HasConflicts = p.Mergeable == MergeableState.Conflicting
-            }).Compile();
+        var pullRequests = await _gitHubClientProvider.GitHubClient.Repository
+            .PullRequest
+            .GetAllForRepository(long.Parse(repository.Id));
 
-        return await _gitHubGraphQlClientProvider.GitHubGraphQlClient.Run(query);
+        return pullRequests.Select(p => new GitPullRequest
+        {
+            Number = p.Number,
+            Id = p.Id.ToString(),
+            Title = p.Title,
+            Body = p.Body,
+            HasConflicts = p.MergeableState is { Value: MergeableState.Dirty }
+        }).ToList();
     }
 
     public async Task ClosePullRequest(GitRepository gitRepository, GitPullRequest pullRequest)
     {
-        await _githubHttpClient.ClosePr(gitRepository.Owner, gitRepository.Name, pullRequest.Number);
+        await _gitHubClientProvider.GitHubClient.PullRequest.Update(long.Parse(gitRepository.Id), pullRequest.Number,
+            new PullRequestUpdate
+            {
+                State = ItemState.Closed
+            });
     }
 }

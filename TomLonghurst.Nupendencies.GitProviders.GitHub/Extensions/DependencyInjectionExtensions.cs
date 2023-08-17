@@ -1,7 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Reflection;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Clients;
 using TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
@@ -15,20 +12,12 @@ public static class DependencyInjectionExtensions
         GitHubOptions options)
     {
         services.AddSingleton(options);
-        services.AddHttpClient<GitHubHttpClient>(client =>
-            {
-                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("pull-request-scanner", Assembly.GetAssembly(typeof(GitHubProvider))?.GetName().Version?.ToString()));
 
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(
-                        $"{options.AuthenticationUsername}:{options.AuthenticationPatToken}")));
-                client.BaseAddress = new Uri("https://api.github.com/");
-            });
-
-        services.AddSingleton<IGitHubGraphQlClientProvider, GitHubGraphQlClientProvider>()
+        services.AddSingleton<IGitHubClientProvider, GitHubClientProvider>()
             .AddGitProvider<GitHubProvider>()
-            .AddTransient<IGitHubIssuerService, GitHubIssuerService>()
-            .AddTransient<IGitHubPullRequestService, GitHubPullRequestService>();
+            .AddTransient<IGitHubIssueService, GitHubIssueService>()
+            .AddTransient<IGitHubPullRequestService, GitHubPullRequestService>()
+            .AddTransient<IGitHubRepositoriesProvider, GitHubRepositoriesProvider>();
 
         return services;
     }

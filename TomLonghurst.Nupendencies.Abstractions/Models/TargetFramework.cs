@@ -11,8 +11,12 @@ public record TargetFramework
     public TargetFramework(Project project)
     {
         Project = project;
+        
         TargetFrameworkTag = project.ProjectRootElement.Properties.FirstOrDefault(x => x.Name == "TargetFramework");
-        OriginalValue = TargetFrameworkTag?.Value;
+        
+        OriginalValue = TargetFrameworkTag?.Value
+            ?? project.DirectoryBuildProps.Select(x => x.TargetFramework.OriginalValue).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+        
         CurrentValue = OriginalValue;
     }
 

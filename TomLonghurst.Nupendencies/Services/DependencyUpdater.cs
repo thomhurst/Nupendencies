@@ -6,6 +6,7 @@ using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Clients;
 using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Models;
 using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
@@ -36,7 +37,6 @@ public class DependencyUpdater : IDependencyUpdater
 
         var packagesGrouped = allProjects
             .SelectMany(p => p.Packages)
-            .Where(ShouldUpdatePackage)
             .GroupBy(x => x.Name)
             .ToList();
 
@@ -95,14 +95,19 @@ public class DependencyUpdater : IDependencyUpdater
         return results;
     }
 
-    private bool ShouldUpdatePackage(ProjectPackage package)
+    private bool ShouldUpdatePackage(string packageName, SemVersion originalVersion, string latestVersion)
     {
-        if (_nupendenciesOptions.PackagesToUpdate == null)
+        if (!SemVersion.TryParse(latestVersion, SemVersionStyles.Any, out var latestSemVersion))
+        {
+            return false;
+        }
+        
+        if (_nupendenciesOptions.ShouldUpdatePackagePredicate == null)
         {
             return true;
         }
 
-        return _nupendenciesOptions.PackagesToUpdate.Invoke(package);
+        return _nupendenciesOptions.ShouldUpdatePackagePredicate.Invoke(new PackageUpdateModel(packageName, originalVersion, latestSemVersion));
     }
 
     private int GetEfficientOrder(NuGetPackageInformation nuGetPackageInformation,
@@ -168,7 +173,7 @@ public class DependencyUpdater : IDependencyUpdater
                     continue;
                 }
 
-                if (!VersionsNeedsUpdating(nuGetPackageInformation.Version.ToNormalizedString(),
+                if (!VersionsNeedsUpdating(nuGetPackageInformation.PackageName, nuGetPackageInformation.Version.ToNormalizedString(),
                         projectPackages.Min(x => x.OriginalVersion)!))
                 {
                     continue;
@@ -198,7 +203,7 @@ public class DependencyUpdater : IDependencyUpdater
         }
 
         var packagesNeedingUpdating = packages
-            .Where(v => VersionsNeedsUpdating(latestVersion, v.OriginalVersion))
+            .Where(v => VersionsNeedsUpdating(v.Name, latestVersion, v.OriginalVersion))
             .ToList();
 
         if (!packagesNeedingUpdating.Any())
@@ -241,7 +246,7 @@ public class DependencyUpdater : IDependencyUpdater
                Environment.NewLine + solutionBuildResult.OutputString;
     }
 
-    private static bool VersionsNeedsUpdating(string latestVersionString, SemVersion originalVersion)
+    private bool VersionsNeedsUpdating(string packageName, string latestVersionString, SemVersion originalVersion)
     {
         if (!SemVersion.TryParse(latestVersionString, SemVersionStyles.Any, out var latestVersion))
         {
@@ -253,7 +258,14 @@ public class DependencyUpdater : IDependencyUpdater
             return false;
         }
 
-        return SemVersion.CompareSortOrder(originalVersion, latestVersion) < 0;
+        var compareSortOrder = SemVersion.CompareSortOrder(originalVersion, latestVersion);
+
+        if (compareSortOrder >= 0)
+        {
+            return false;
+        }
+        
+        return ShouldUpdatePackage(packageName, originalVersion, latestVersion?.ToString() ?? "");
     }
 
     private static void UpdateInfo(string latestVersion, ICollection<PackageUpdateResult> packageUpdateResults,

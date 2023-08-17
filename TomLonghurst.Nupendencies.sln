@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.GitProviders.GitHub", "TomLonghurst.Nupendencies.GitProviders.GitHub\TomLonghurst.Nupendencies.GitProviders.GitHub.csproj", "{84079868-897C-4F02-863D-40B63A49C9CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomLonghurst.Nupendencies.Pipeline", "TomLonghurst.Nupendencies.Pipeline\TomLonghurst.Nupendencies.Pipeline.csproj", "{4A3D81A8-ED68-4007-A81A-FE8396A42CB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{84079868-897C-4F02-863D-40B63A49C9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84079868-897C-4F02-863D-40B63A49C9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84079868-897C-4F02-863D-40B63A49C9CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A3D81A8-ED68-4007-A81A-FE8396A42CB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A3D81A8-ED68-4007-A81A-FE8396A42CB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A3D81A8-ED68-4007-A81A-FE8396A42CB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A3D81A8-ED68-4007-A81A-FE8396A42CB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

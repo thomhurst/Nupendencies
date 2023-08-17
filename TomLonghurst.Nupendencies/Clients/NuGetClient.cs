@@ -74,7 +74,7 @@ public class NuGetClient
             return nuGetPackageInformation;
         }
 
-        if (_memoryCache.TryGetValue(packageName + version, out NullInstance _))
+        if (_memoryCache.TryGetValue<NullInstance>($"{packageName}{version}", out _))
         {
             return null;
         }

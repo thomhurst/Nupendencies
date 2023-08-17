@@ -2,25 +2,32 @@
 using TomLonghurst.Nupendencies.Abstractions.Extensions;
 using TomLonghurst.Nupendencies.Abstractions.Models;
 using TomLonghurst.Nupendencies.Contracts;
+using TomLonghurst.Nupendencies.Options;
 
 namespace TomLonghurst.Nupendencies.Services;
 
 public class TargetFrameworkUpdater : ITargetFrameworkUpdater
 {
-    public static readonly string LatestNetValue = "net7.0";
-
     private readonly ISolutionBuilder _solutionBuilder;
     private readonly ILogger<TargetFrameworkUpdater> _logger;
+    private readonly NupendenciesOptions _nupendenciesOptions;
 
     public TargetFrameworkUpdater(ISolutionBuilder solutionBuilder,
-        ILogger<TargetFrameworkUpdater> logger)
+        ILogger<TargetFrameworkUpdater> logger,
+        NupendenciesOptions nupendenciesOptions)
     {
         _solutionBuilder = solutionBuilder;
         _logger = logger;
+        _nupendenciesOptions = nupendenciesOptions;
     }
     
     public async Task<TargetFrameworkUpdateResult> TryUpdateTargetFramework(CodeRepository repository)
     {
+        if (string.IsNullOrWhiteSpace(_nupendenciesOptions.TryUpdateTargetFrameworkTo))
+        {
+            return new TargetFrameworkUpdateResult(false, string.Empty, string.Empty);
+        }
+        
         var netCoreProjects = repository.AllProjects
             .Where(x => !x.IsMultiTargeted)
             .Where(x => x.TargetFramework.HasValue)
@@ -34,7 +41,7 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
         
         foreach (var netCoreProject in netCoreProjects)
         {
-            netCoreProject.TargetFramework.CurrentValue = LatestNetValue;
+            netCoreProject.TargetFramework.CurrentValue = _nupendenciesOptions.TryUpdateTargetFrameworkTo;
         }
 
         var projectsToBuild = netCoreProjects.SelectMany(x => x.Repository.AllProjects).GetProjectsToBuild();
@@ -49,25 +56,33 @@ public class TargetFrameworkUpdater : ITargetFrameworkUpdater
         {
             netCoreProjects.ForEach(x => x.TargetFramework.Rollback());
 
-            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", targetFrameworkOriginalValue, LatestNetValue);
+            _logger.LogWarning(".NET Version Update from {OldVersion} to {LatestVersion} failed", targetFrameworkOriginalValue, _nupendenciesOptions.TryUpdateTargetFrameworkTo);
 
-            return new TargetFrameworkUpdateResult(false, targetFrameworkOriginalValue!, LatestNetValue);
+            return new TargetFrameworkUpdateResult(false, targetFrameworkOriginalValue!, _nupendenciesOptions.TryUpdateTargetFrameworkTo);
         }
 
-        _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", targetFrameworkOriginalValue, LatestNetValue);
-        return new TargetFrameworkUpdateResult(true, targetFrameworkOriginalValue!, LatestNetValue);
+        _logger.LogDebug(".NET Version Update from {OldVersion} to {LatestVersion} was successful", targetFrameworkOriginalValue, _nupendenciesOptions.TryUpdateTargetFrameworkTo);
+        return new TargetFrameworkUpdateResult(true, targetFrameworkOriginalValue!, _nupendenciesOptions.TryUpdateTargetFrameworkTo);
     }
 
-    private static bool NeedsUpdating(Project x)
+    private bool NeedsUpdating(Project x)
     {
-        var currentVersionString = x.TargetFramework.CurrentValue!
-            .Replace("netcoreapp", string.Empty)
-            .Replace("net", string.Empty);
+        try
+        {
+            var currentVersionString = x.TargetFramework.CurrentValue!
+                .Replace("netcoreapp", string.Empty)
+                .Replace("net", string.Empty);
         
-        var currentVersion = double.Parse(currentVersionString);
+            var currentVersion = double.Parse(currentVersionString);
         
-        var latestVersion = double.Parse(LatestNetValue.Replace("net", string.Empty)); 
+            var newVersion = double.Parse(_nupendenciesOptions.TryUpdateTargetFrameworkTo!.Replace("net", string.Empty)); 
         
-        return currentVersion < latestVersion;
+            return currentVersion < newVersion;
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "Error parsing Target Framework");
+            return false;
+        }
     }
 }

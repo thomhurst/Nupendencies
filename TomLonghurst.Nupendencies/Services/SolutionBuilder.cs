@@ -83,12 +83,18 @@ public class SolutionBuilder : ISolutionBuilder
 
     private bool ShouldBuildUsingLegacyMsBuild(Project projectToBuild)
     {
-        if (string.IsNullOrEmpty(projectToBuild.ProjectRootElement.Sdk))
+        if (!string.IsNullOrEmpty(projectToBuild.ProjectRootElement.Sdk))
         {
-            return true;
+            return false;
+        }
+
+        if (projectToBuild.TargetFramework.IsNetCore)
+        {
+            return false;
         }
 
         var referenceElements = projectToBuild.ProjectRootElement.Items.Where(x => x.ItemType == "Reference");
+        
         if (referenceElements.Any())
         {
             return true;

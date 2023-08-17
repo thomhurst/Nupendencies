@@ -2,9 +2,9 @@
 
 namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Services;
 
-public interface IGitHubIssuerService
+public interface IGitHubIssueService
 {
-    Task<IList<GitIssue>> GetCurrentIssues(GitRepository gitRepository);
+    Task<List<GitIssue>> GetIssues(long repositoryId);
     Task RaiseIssue(GitRepository gitRepository, string title, string body);
     Task CloseIssue(GitRepository gitRepository, GitIssue issue);
 }
