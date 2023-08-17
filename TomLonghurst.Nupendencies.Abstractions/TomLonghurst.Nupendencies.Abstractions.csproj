@@ -6,10 +6,11 @@
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-    <PackageReference Include="Microsoft.Build" Version="17.5.0" />
+    <PackageReference Include="LibGit2Sharp" Version="0.27.2" />
+    <PackageReference Include="Microsoft.Build" Version="17.7.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageReference Include="Semver" Version="2.3.0" />
+    <PackageReference Include="TomLonghurst.EnumerableAsyncProcessor" Version="1.1.0" />
     <PackageReference Include="TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization" Version="1.2.1" />
   </ItemGroup>
 </Project>

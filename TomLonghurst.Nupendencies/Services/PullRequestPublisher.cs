@@ -24,6 +24,11 @@ public class PullRequestPublisher : IPullRequestPublisher
     public async Task PublishPullRequest(string clonedLocation, GitRepository gitRepository,
         UpdateReport updateReport)
     {
+        if (!_nupendenciesOptions.RaisePullRequestsForSuccessfulUpdates)
+        {
+            return;
+        }
+        
         var gitProvider = gitRepository.Provider;
         
         var packageUpdateResults = updateReport.UpdatedPackagesResults.Where(r => r.UpdateBuiltSuccessfully).ToList();

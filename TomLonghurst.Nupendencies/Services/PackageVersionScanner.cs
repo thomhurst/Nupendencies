@@ -112,11 +112,10 @@ public class PackageVersionScanner : IPackageVersionScanner
                     .GroupBy(x => x.Name)
                     .Select(x => x.MaxBy(p => p.LibraryRange.VersionRange.MinVersion))
                     .ToAsyncProcessorBuilder()
-                    .SelectAsync(x => _nuGetClient.GetPackage(x!.Name, x.LibraryRange.VersionRange.MinVersion.ToFullString()))
+                    .SelectAsync(x => _nuGetClient.GetPackage(x!.Name, x.LibraryRange?.VersionRange?.MinVersion?.ToFullString()))
                     .ProcessInParallel())
                 .Where(x => x != null)
                 .SelectMany(x => x!.Dependencies)
-                .Where(x => x != null)
                 .ToList();
         
             var newIndirectDependenciesOfThisPackage = newIndirectDependencies

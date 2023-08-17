@@ -1,5 +1,3 @@
-﻿namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
+namespace TomLonghurst.Nupendencies.GitProviders.GitHub.Options;
 
-public sealed record GitHubUserSpace : GitHubSpace
-{
-}
+public sealed record GitHubUserSpace(string Username) : GitHubSpace;
