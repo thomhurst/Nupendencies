@@ -10,6 +10,9 @@ updates:
         patterns:
           - NUnit*
           - "*Test*"
+      modularpipelines-dependencies:
+        patterns:
+          - "*ModularPipeline*"
     ignore:
       - dependency-name: "Microsoft.Extensions.*"
         update-types: ["version-update:semver-major"]
