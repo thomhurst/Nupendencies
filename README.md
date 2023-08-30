@@ -1,5 +1,5 @@
 # Nupendencies
-Automated NuGet Dependency Updater
+Automated NuGet Dependency Updater 
 
 ## What does it do?
 - It will scan your repositories in your Git Provider (Currently supporting Azure DevOps and GitHub)
