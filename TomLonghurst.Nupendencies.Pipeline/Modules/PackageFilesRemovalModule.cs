@@ -6,7 +6,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 public class PackageFilesRemovalModule : Module
 {
-    protected override Task<ModuleResult<IDictionary<string, object>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override Task<IDictionary<string, object>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var packageFiles = context.FileSystem.GetFiles(context.Environment.GitRootDirectory!.Path,
             SearchOption.AllDirectories,

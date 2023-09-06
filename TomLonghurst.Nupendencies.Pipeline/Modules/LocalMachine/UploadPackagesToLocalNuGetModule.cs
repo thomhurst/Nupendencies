@@ -14,7 +14,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules.LocalMachine;
 [DependsOn<CreateLocalNugetFolderModule>]
 public class UploadPackagesToLocalNuGetModule : Module<CommandResult[]>
 {
-    protected override async Task OnBeforeExecute(IModuleContext context)
+    protected override async Task OnBeforeExecute(IPipelineContext context)
     {
         var packagePaths = await GetModule<PackagePathsParserModule>();
         foreach (var packagePath in packagePaths.Value!)
@@ -25,7 +25,7 @@ public class UploadPackagesToLocalNuGetModule : Module<CommandResult[]>
         await base.OnBeforeExecute(context);
     }
 
-    protected override async Task<ModuleResult<CommandResult[]>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<CommandResult[]?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var localRepoLocation = await GetModule<CreateLocalNugetFolderModule>();
         var packagePaths = await GetModule<PackagePathsParserModule>();

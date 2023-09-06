@@ -11,7 +11,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules.LocalMachine;
 [DependsOn<PackagePathsParserModule>]
 public class CreateLocalNugetFolderModule : Module<Folder>
 {
-    protected override async Task<ModuleResult<Folder>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<Folder?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var localNugetRepositoryFolder = context.FileSystem.GetFolder(Environment.SpecialFolder.ApplicationData)
             .GetFolder("ModularPipelines")

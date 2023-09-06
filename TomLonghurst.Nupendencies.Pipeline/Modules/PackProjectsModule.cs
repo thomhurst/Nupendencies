@@ -14,7 +14,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 [DependsOn<BuildNetSdkLocatorExecutablesModule>]
 public class PackProjectsModule : Module<List<CommandResult>>
 {
-    protected override async Task<ModuleResult<List<CommandResult>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<List<CommandResult>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var results = new List<CommandResult>();
         var packageVersion = await GetModule<NugetVersionGeneratorModule>();
@@ -27,7 +27,7 @@ public class PackProjectsModule : Module<List<CommandResult>>
         return results;
     }
 
-    private bool GetProjectsPredicate(File file, IModuleContext context)
+    private bool GetProjectsPredicate(File file, IPipelineContext context)
     {
         var path = file.Path;
         if (!path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))

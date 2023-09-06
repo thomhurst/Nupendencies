@@ -8,7 +8,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
 {
-    protected override async Task<ModuleResult<List<CommandResult>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<List<CommandResult>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var projectFile = context.Environment.GitRootDirectory!.GetFiles(f => f.Path.EndsWith("TomLonghurst.Nupendencies.NetSdkLocator.csproj")).First();
         
