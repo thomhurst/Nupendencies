@@ -14,7 +14,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 [DependsOn<RunUnitTestsModule>]
 [DependsOn<PackagePathsParserModule>]
-public class UploadPackagesToNugetModule : Module<List<CommandResult>>
+public class UploadPackagesToNugetModule : Module<CommandResult[]>
 {
     private readonly IOptions<NuGetSettings> _options;
 
@@ -56,7 +56,7 @@ public class UploadPackagesToNugetModule : Module<List<CommandResult>>
         return false;
     }
 
-    protected override async Task<ModuleResult<List<CommandResult>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<ModuleResult<CommandResult[]>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
     {
         var gitVersionInformation = await context.Git().Versioning.GetGitVersioningInformation();
 
