@@ -9,7 +9,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 public class RunUnitTestsModule : Module<List<DotNetTestResult>>
 {
-    protected override async Task<ModuleResult<List<DotNetTestResult>>?> ExecuteAsync(IModuleContext context, CancellationToken cancellationToken)
+    protected override async Task<List<DotNetTestResult>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var results = new List<DotNetTestResult>();
 
