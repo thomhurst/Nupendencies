@@ -11,6 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageReference Include="Semver" Version="2.3.0" />
     <PackageReference Include="TomLonghurst.EnumerableAsyncProcessor" Version="1.1.0" />
-    <PackageReference Include="TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization" Version="1.2.2" />
+    <PackageReference Include="TomLonghurst.Microsoft.Extensions.DependencyInjection.ServiceInitialization" Version="1.2.3" />
   </ItemGroup>
 </Project>
