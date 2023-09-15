@@ -1,5 +1,5 @@
 using ModularPipelines.Context;
-using ModularPipelines.Git;
+using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
 using ModularPipelines.Modules;
 
