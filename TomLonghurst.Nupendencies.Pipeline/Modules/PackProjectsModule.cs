@@ -3,6 +3,7 @@ using ModularPipelines.Attributes;
 using ModularPipelines.Context;
 using ModularPipelines.DotNet.Extensions;
 using ModularPipelines.DotNet.Options;
+using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
 using ModularPipelines.Modules;
 using File = ModularPipelines.FileSystem.File;
@@ -18,7 +19,7 @@ public class PackProjectsModule : Module<List<CommandResult>>
     {
         var results = new List<CommandResult>();
         var packageVersion = await GetModule<NugetVersionGeneratorModule>();
-        var projectFiles = context.Environment.GitRootDirectory!.GetFiles(f => GetProjectsPredicate(f, context));
+        var projectFiles = context.Git().RootDirectory!.GetFiles(f => GetProjectsPredicate(f, context));
         foreach (var projectFile in projectFiles)
         {
             results.Add(await context.DotNet().Pack(new DotNetPackOptions { TargetPath = projectFile.Path, Configuration = Configuration.Release, Properties = new[] { $"PackageVersion={packageVersion.Value}", $"Version={packageVersion.Value}", } }, cancellationToken));

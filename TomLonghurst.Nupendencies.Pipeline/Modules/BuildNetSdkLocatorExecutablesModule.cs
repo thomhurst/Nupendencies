@@ -1,6 +1,7 @@
 using ModularPipelines.Context;
 using ModularPipelines.DotNet.Extensions;
 using ModularPipelines.DotNet.Options;
+using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
 using ModularPipelines.Modules;
 
@@ -10,7 +11,7 @@ public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
 {
     protected override async Task<List<CommandResult>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
-        var projectFile = context.Environment.GitRootDirectory!.GetFiles(f => f.Path.EndsWith("TomLonghurst.Nupendencies.NetSdkLocator.csproj")).First();
+        var projectFile = context.Git().RootDirectory!.GetFiles(f => f.Path.EndsWith("TomLonghurst.Nupendencies.NetSdkLocator.csproj")).First();
         
         var results = new List<CommandResult>();
 
