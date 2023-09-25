@@ -21,7 +21,6 @@ public class UploadPackagesToNugetModule : Module<CommandResult[]>
 
     public UploadPackagesToNugetModule(IOptions<NuGetSettings> options)
     {
-        ArgumentNullException.ThrowIfNull(options.Value.ApiKey);
         _options = options;
     }
 
@@ -59,6 +58,8 @@ public class UploadPackagesToNugetModule : Module<CommandResult[]>
 
     protected override async Task<CommandResult[]?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(options.Value.ApiKey);
+
         var gitVersionInformation = await context.Git().Versioning.GetGitVersioningInformation();
 
         if (gitVersionInformation.BranchName != "main")

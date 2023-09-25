@@ -3,6 +3,7 @@ using ModularPipelines.DotNet.Extensions;
 using ModularPipelines.DotNet.Options;
 using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
+using ModularPipelines.Enums;
 using ModularPipelines.Modules;
 
 namespace TomLonghurst.Nupendencies.Pipeline.Modules;
@@ -20,7 +21,7 @@ public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
             TargetPath = projectFile,
             Configuration = Configuration.Release,
             Framework = "net48",
-            LogOutput = false,
+            CommandLogging = CommandLogging.Input | CommandLogging.Error,
         }, cancellationToken));
         
         results.Add(await context.DotNet().Build(new DotNetBuildOptions
@@ -28,7 +29,7 @@ public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
             TargetPath = projectFile,
             Configuration = Configuration.Release,
             Framework = "net7.0",
-            LogOutput = false,
+            CommandLogging = CommandLogging.Input | CommandLogging.Error,
         }, cancellationToken));
 
         return results;
