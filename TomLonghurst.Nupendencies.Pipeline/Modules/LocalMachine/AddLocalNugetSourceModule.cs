@@ -2,7 +2,6 @@
 using ModularPipelines.Context;
 using ModularPipelines.Exceptions;
 using ModularPipelines.Models;
-using ModularPipelines.Enums;
 using ModularPipelines.Modules;
 using ModularPipelines.NuGet.Extensions;
 using ModularPipelines.NuGet.Options;
@@ -12,7 +11,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules.LocalMachine;
 [DependsOn<CreateLocalNugetFolderModule>]
 public class AddLocalNugetSourceModule : Module<CommandResult>
 {
-    protected override async Task<SkipDecision> ShouldIgnoreFailures(IPipelineContext context, Exception exception)
+    protected override async Task<bool> ShouldIgnoreFailures(IPipelineContext context, Exception exception)
     {
         await Task.Yield();
         return exception is CommandException commandException &&

@@ -6,6 +6,7 @@ using ModularPipelines.Extensions;
 using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
 using ModularPipelines.Modules;
+using ModularPipelines.Enums;
 using ModularPipelines.NuGet.Extensions;
 using ModularPipelines.NuGet.Options;
 using TomLonghurst.Nupendencies.Pipeline.Settings;
@@ -36,7 +37,7 @@ public class UploadPackagesToNugetModule : Module<CommandResult[]>
         await base.OnBeforeExecute(context);
     }
 
-    protected override async Task<bool> ShouldSkip(IPipelineContext context)
+    protected override async Task<SkipDecision> ShouldSkip(IPipelineContext context)
     {
         var gitVersionInfo = await context.Git().Versioning.GetGitVersioningInformation();
 
