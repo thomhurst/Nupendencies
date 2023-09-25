@@ -4,6 +4,7 @@ using ModularPipelines.DotNet.Extensions;
 using ModularPipelines.DotNet.Options;
 using ModularPipelines.Git.Extensions;
 using ModularPipelines.Models;
+using ModularPipelines.Enums;
 using ModularPipelines.Modules;
 
 namespace TomLonghurst.Nupendencies.Pipeline.Modules;
@@ -22,7 +23,7 @@ public class RunUnitTestsModule : Module<List<DotNetTestResult>>
             results.Add(await context.DotNet().Test(new DotNetTestOptions
             {
                 TargetPath = unitTestProjectFile.Path,
-                LogOutput = false
+                CommandLogging = CommandLogging.Input | CommandLogging.Error,
             }, cancellationToken));
         }
 
