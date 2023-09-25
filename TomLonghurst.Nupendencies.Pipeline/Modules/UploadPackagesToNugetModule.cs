@@ -58,7 +58,7 @@ public class UploadPackagesToNugetModule : Module<CommandResult[]>
 
     protected override async Task<CommandResult[]?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(options.Value.ApiKey);
+        ArgumentNullException.ThrowIfNull(_options.Value.ApiKey);
 
         var gitVersionInformation = await context.Git().Versioning.GetGitVersioningInformation();
 
