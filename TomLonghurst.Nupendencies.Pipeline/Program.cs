@@ -3,13 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ModularPipelines.Extensions;
 using ModularPipelines.Host;
-using TomLonghurst.Nupendencies.Pipeline;
 using TomLonghurst.Nupendencies.Pipeline.Modules;
 using TomLonghurst.Nupendencies.Pipeline.Modules.LocalMachine;
 using TomLonghurst.Nupendencies.Pipeline.Settings;
 
-var modules = await PipelineHostBuilder.Create()
-    .ConfigureAppConfiguration((context, builder) =>
+await PipelineHostBuilder.Create()
+    .ConfigureAppConfiguration((_, builder) =>
     {
         builder.AddJsonFile("appsettings.json")
             .AddUserSecrets<Program>()
@@ -18,14 +17,6 @@ var modules = await PipelineHostBuilder.Create()
     .ConfigureServices((context, collection) =>
     {
         collection.Configure<NuGetSettings>(context.Configuration.GetSection("NuGet"));
-
-        collection.AddModule<RunUnitTestsModule>()
-            .AddModule<NugetVersionGeneratorModule>()
-            .AddModule<PackProjectsModule>()
-            .AddModule<BuildNetSdkLocatorExecutablesModule>()
-            .AddModule<PackageFilesRemovalModule>()
-            .AddModule<PackagePathsParserModule>()
-            .AddPipelineModuleHooks<MyModuleHooks>();
 
         if (context.HostingEnvironment.IsDevelopment())
         {
@@ -38,4 +29,10 @@ var modules = await PipelineHostBuilder.Create()
             collection.AddModule<UploadPackagesToNugetModule>();
         }
     })
+    .AddModule<RunUnitTestsModule>()
+    .AddModule<NugetVersionGeneratorModule>()
+    .AddModule<PackProjectsModule>()
+    .AddModule<BuildNetSdkLocatorExecutablesModule>()
+    .AddModule<PackageFilesRemovalModule>()
+    .AddModule<PackagePathsParserModule>()
     .ExecutePipelineAsync();
