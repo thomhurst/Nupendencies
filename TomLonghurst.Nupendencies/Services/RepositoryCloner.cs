@@ -25,7 +25,10 @@ public class RepositoryCloner : IRepositoryCloner
 
         Repository.Clone(gitRepository.GitUrl, Path.Combine(tempDirectory, gitRepository.Name), new CloneOptions
         {
-            CredentialsProvider = (_, _, types) => gitRepository.Credentials
+            FetchOptions =
+            {
+                CredentialsProvider = (_, _, _) => gitRepository.Credentials
+            }
         });
 
         _logger.LogDebug("Cloned Repository {RepositoryName} into Directory {Directory}", gitRepository.Name, tempDirectory);
