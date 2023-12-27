@@ -7,7 +7,7 @@ namespace TomLonghurst.Nupendencies.Pipeline.Modules;
 
 public class PackageFilesRemovalModule : Module
 {
-    protected override Task<IDictionary<string, object>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
+    protected override async Task<IDictionary<string, object>?> ExecuteAsync(IPipelineContext context, CancellationToken cancellationToken)
     {
         var packageFiles = context.Git().RootDirectory.GetFiles(path => path.Extension is ".nupkg");
 
@@ -16,6 +16,6 @@ public class PackageFilesRemovalModule : Module
             packageFile.Delete();
         }
 
-        return NothingAsync();
+        return await NothingAsync();
     }
 }
