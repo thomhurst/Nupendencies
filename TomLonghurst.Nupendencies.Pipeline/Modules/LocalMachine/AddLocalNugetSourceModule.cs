@@ -1,10 +1,10 @@
 ﻿using ModularPipelines.Attributes;
 using ModularPipelines.Context;
+using ModularPipelines.DotNet.Extensions;
+using ModularPipelines.DotNet.Options;
 using ModularPipelines.Exceptions;
 using ModularPipelines.Models;
 using ModularPipelines.Modules;
-using ModularPipelines.NuGet.Extensions;
-using ModularPipelines.NuGet.Options;
 
 namespace TomLonghurst.Nupendencies.Pipeline.Modules.LocalMachine;
 
@@ -22,7 +22,10 @@ public class AddLocalNugetSourceModule : Module<CommandResult>
     {
         var localNugetPathResult = await GetModule<CreateLocalNugetFolderModule>();
 
-        return await context.NuGet()
-            .AddSource(new NuGetSourceOptions(new Uri(localNugetPathResult.Value!), "ModularPipelinesLocalNuGet"));
+        return await context.DotNet().Nuget.Add
+            .Source(new DotNetNugetAddSourceOptions(localNugetPathResult.Value!)
+            {
+                Name = "ModularPipelinesLocalNuGet"
+            }, cancellationToken);
     }
 }
