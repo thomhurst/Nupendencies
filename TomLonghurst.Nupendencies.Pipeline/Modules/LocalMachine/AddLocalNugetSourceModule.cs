@@ -27,6 +27,5 @@ public class AddLocalNugetSourceModule : Module<CommandResult>
             {
                 Name = "ModularPipelinesLocalNuGet"
             }, cancellationToken);
-
     }
 }
