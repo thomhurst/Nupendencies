@@ -18,7 +18,7 @@ public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
 
         results.Add(await context.DotNet().Build(new DotNetBuildOptions
         {
-            TargetPath = projectFile,
+            ProjectSolution = projectFile,
             Configuration = Configuration.Release,
             Framework = "net48",
             CommandLogging = CommandLogging.Input | CommandLogging.Error,
@@ -26,7 +26,7 @@ public class BuildNetSdkLocatorExecutablesModule : Module<List<CommandResult>>
         
         results.Add(await context.DotNet().Build(new DotNetBuildOptions
         {
-            TargetPath = projectFile,
+            ProjectSolution = projectFile,
             Configuration = Configuration.Release,
             Framework = "net7.0",
             CommandLogging = CommandLogging.Input | CommandLogging.Error,
